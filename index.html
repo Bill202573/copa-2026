@@ -296,10 +296,6 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
       <span style="font-size:12px;color:#2ecc71">✅ Chave OpenAI configurada</span>
       <button onclick="clearApiKey()" style="background:none;border:none;color:rgba(255,255,255,.35);font-size:11px;cursor:pointer;text-decoration:underline">trocar</button>
     </div>
-    <div class="scan-lbl">Seleção da página</div>
-    <select id="scan-sel-select" class="scan-select" onchange="onScanSelChange()">
-      <option value="">— Escolha a seleção —</option>
-    </select>
     <div class="scan-lbl">Foto da página</div>
     <label class="scan-upload-lbl">
       <div style="font-size:28px;margin-bottom:6px">📷</div>
@@ -837,15 +833,6 @@ let scanResultFilled = [];
 let scanSelectedCod = null;
 
 window.openScanModal = function() {
-  const sel = document.getElementById("scan-sel-select");
-  if (sel.options.length <= 1) {
-    TODOS.forEach(s => {
-      const opt = document.createElement("option");
-      opt.value = s.cod;
-      opt.textContent = s.flag + " " + s.nome;
-      sel.appendChild(opt);
-    });
-  }
   document.getElementById("scan-modal").style.display = "flex";
   document.getElementById("scan-key-section").style.display = scanApiKey ? "none" : "block";
   document.getElementById("scan-key-ok").style.display = scanApiKey ? "flex" : "none";
@@ -857,7 +844,6 @@ window.closeScanModal = function() {
   document.getElementById("scan-preview-img").src = "";
   document.getElementById("scan-result-box").style.display = "none";
   document.getElementById("scan-analyze-btn").disabled = true;
-  document.getElementById("scan-sel-select").value = "";
   scanImageBase64 = null; scanResultFilled = []; scanSelectedCod = null;
 };
 
@@ -889,27 +875,21 @@ window.handleScanImage = function(input) {
     scanImageBase64 = dataUrl.split(",")[1];
     document.getElementById("scan-preview-img").src = dataUrl;
     document.getElementById("scan-preview").style.display = "block";
-    document.getElementById("scan-analyze-btn").disabled = !scanSelectedCod;
+    document.getElementById("scan-analyze-btn").disabled = false;
   };
   reader.readAsDataURL(file);
-};
-
-window.onScanSelChange = function() {
-  scanSelectedCod = document.getElementById("scan-sel-select").value || null;
-  document.getElementById("scan-analyze-btn").disabled = !scanImageBase64 || !scanSelectedCod;
 };
 
 window.runScan = async function() {
   if (!scanApiKey) { showToast("Configure a chave OpenAI primeiro", "error"); return; }
   if (!scanImageBase64) { showToast("Adicione uma foto primeiro", "error"); return; }
-  if (!scanSelectedCod) { showToast("Selecione a seleção", "error"); return; }
-  const sel = TODOS.find(s => s.cod === scanSelectedCod);
   const btn = document.getElementById("scan-analyze-btn");
   btn.disabled = true;
   btn.textContent = "⏳ Analisando...";
   document.getElementById("scan-result-box").style.display = "none";
   try {
-    const prompt = `Esta é uma página do álbum de figurinhas Panini Copa 2026, seleção ${sel.nome}. A página tem ${sel.total} slots numerados de 1 a ${sel.total}. Slots preenchidos têm figurinha colada, slots vazios são espaços em branco. Identifique quais números estão preenchidos e quais estão vazios. Retorne APENAS JSON válido: {"filled":[...],"empty":[...]}`;
+    const teamList = TODOS.map(s => s.cod + "=" + s.nome).join(", ");
+    const prompt = `Esta é uma página do álbum de figurinhas Panini Copa 2026. Faça duas coisas:\n1) Identifique qual seleção é esta página usando exatamente um destes códigos: ${teamList}\n2) Analise cada slot de figurinha: slots preenchidos têm figurinha colada, slots vazios são espaços em branco/cinza.\nRetorne APENAS JSON válido neste formato: {"team_cod":"BRA","filled":[1,3,5],"empty":[2,4,6]}`;
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + scanApiKey },
@@ -919,7 +899,7 @@ window.runScan = async function() {
           { type: "text", text: prompt },
           { type: "image_url", image_url: { url: "data:" + scanImageMime + ";base64," + scanImageBase64 } }
         ]}],
-        max_tokens: 500
+        max_tokens: 600
       })
     });
     if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error?.message || "Erro " + res.status); }
@@ -928,12 +908,15 @@ window.runScan = async function() {
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Resposta inesperada da IA");
     const parsed = JSON.parse(jsonMatch[0]);
+    const sel = TODOS.find(s => s.cod === parsed.team_cod);
+    if (!sel) throw new Error("Seleção não identificada na foto — tente novamente");
+    scanSelectedCod = sel.cod;
     scanResultFilled = (parsed.filled || []).map(Number).filter(n => n >= 1 && n <= sel.total);
     const emptyList = (parsed.empty || []).map(Number).filter(n => n >= 1 && n <= sel.total);
     const newOnes = scanResultFilled.filter(n => getStatus(sel.cod, n) === "falta");
-    const box = document.getElementById("scan-result-box");
-    box.style.display = "block";
+    document.getElementById("scan-result-box").style.display = "block";
     document.getElementById("scan-result-text").innerHTML =
+      `<div style="color:var(--gold);margin-bottom:8px;font-size:15px">${sel.flag} <b>${sel.nome}</b> detectada</div>` +
       `<div style="color:#2ecc71;margin-bottom:4px">✅ <b>${scanResultFilled.length}</b> com figurinha colada</div>` +
       `<div style="color:#e74c3c;margin-bottom:4px">❌ <b>${emptyList.length}</b> slots vazios</div>` +
       `<div style="color:#c8a84b;font-size:12px">${newOnes.length} serão marcadas como TENHO (novas)</div>` +
