@@ -308,6 +308,11 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
       <div id="scan-result-text"></div>
       <button class="scan-confirm-btn" onclick="confirmScan()">✅ MARCAR COMO TENHO</button>
     </div>
+    <div id="scan-fallback-section" style="display:none">
+      <div style="color:var(--gold);font-size:13px;margin-bottom:8px">⚠️ Seleção <b id="scan-cod-detected"></b> não está na lista — selecione manualmente:</div>
+      <select id="scan-fallback-select" class="scan-select"></select>
+      <button class="scan-confirm-btn" onclick="useFallbackTeam()">USAR ESTA SELEÇÃO</button>
+    </div>
   </div>
 </div>
 
@@ -880,6 +885,30 @@ window.handleScanImage = function(input) {
   reader.readAsDataURL(file);
 };
 
+let scanRawFilled = [];
+
+function showScanResult(sel) {
+  scanSelectedCod = sel.cod;
+  scanResultFilled = scanRawFilled.filter(n => n >= 1 && n <= sel.total);
+  const emptyCount = sel.total - scanResultFilled.length;
+  const newOnes = scanResultFilled.filter(n => getStatus(sel.cod, n) === "falta");
+  document.getElementById("scan-result-box").style.display = "block";
+  document.getElementById("scan-result-text").innerHTML =
+    `<div style="color:var(--gold);margin-bottom:8px;font-size:15px">${sel.flag} <b>${sel.nome}</b></div>` +
+    `<div style="color:#2ecc71;margin-bottom:4px">✅ <b>${scanResultFilled.length}</b> com figurinha colada</div>` +
+    `<div style="color:#e74c3c;margin-bottom:4px">❌ <b>${emptyCount}</b> slots vazios</div>` +
+    `<div style="color:#c8a84b;font-size:12px">${newOnes.length} serão marcadas como TENHO (novas)</div>` +
+    (scanResultFilled.length > 0 ? `<div style="font-size:11px;margin-top:6px;color:rgba(255,255,255,.4)">Nºs: ${scanResultFilled.slice().sort((a,b)=>a-b).join(", ")}</div>` : "");
+}
+
+window.useFallbackTeam = function() {
+  const cod = document.getElementById("scan-fallback-select").value;
+  if (!cod) { showToast("Selecione uma seleção", "error"); return; }
+  const sel = TODOS.find(s => s.cod === cod);
+  document.getElementById("scan-fallback-section").style.display = "none";
+  showScanResult(sel);
+};
+
 window.runScan = async function() {
   if (!scanApiKey) { showToast("Configure a chave OpenAI primeiro", "error"); return; }
   if (!scanImageBase64) { showToast("Adicione uma foto primeiro", "error"); return; }
@@ -887,9 +916,10 @@ window.runScan = async function() {
   btn.disabled = true;
   btn.textContent = "⏳ Analisando...";
   document.getElementById("scan-result-box").style.display = "none";
+  document.getElementById("scan-fallback-section").style.display = "none";
   try {
     const teamList = TODOS.map(s => s.cod + "=" + s.nome).join(", ");
-    const prompt = `Esta é uma página do álbum de figurinhas Panini Copa 2026. Faça duas coisas:\n1) Identifique qual seleção é esta página usando exatamente um destes códigos: ${teamList}\n2) Analise cada slot de figurinha: slots preenchidos têm figurinha colada, slots vazios são espaços em branco/cinza.\nRetorne APENAS JSON válido neste formato: {"team_cod":"BRA","filled":[1,3,5],"empty":[2,4,6]}`;
+    const prompt = `Esta é uma página do álbum de figurinhas Panini Copa 2026. Analise com cuidado:\n\n1) Identifique a seleção pelo nome/bandeira visível na página. Se estiver na lista, use o código exato: ${teamList}. Se não estiver, invente um código de 3 letras baseado no nome.\n\n2) Para cada slot numerado: um slot PREENCHIDO tem foto de jogador com cores e imagem real. Um slot VAZIO mostra apenas o contorno/moldura em branco ou cinza sem foto. Leia os números diretamente impressos nos slots.\n\nRetorne APENAS JSON: {"team_cod":"BRA","filled":[1,3,5],"empty":[2,4,6]}`;
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + scanApiKey },
@@ -897,7 +927,7 @@ window.runScan = async function() {
         model: "gpt-4o",
         messages: [{ role: "user", content: [
           { type: "text", text: prompt },
-          { type: "image_url", image_url: { url: "data:" + scanImageMime + ";base64," + scanImageBase64 } }
+          { type: "image_url", image_url: { url: "data:" + scanImageMime + ";base64," + scanImageBase64, detail: "high" } }
         ]}],
         max_tokens: 600
       })
@@ -908,19 +938,18 @@ window.runScan = async function() {
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Resposta inesperada da IA");
     const parsed = JSON.parse(jsonMatch[0]);
+    scanRawFilled = (parsed.filled || []).map(Number);
     const sel = TODOS.find(s => s.cod === parsed.team_cod);
-    if (!sel) throw new Error("Seleção não identificada na foto — tente novamente");
-    scanSelectedCod = sel.cod;
-    scanResultFilled = (parsed.filled || []).map(Number).filter(n => n >= 1 && n <= sel.total);
-    const emptyList = (parsed.empty || []).map(Number).filter(n => n >= 1 && n <= sel.total);
-    const newOnes = scanResultFilled.filter(n => getStatus(sel.cod, n) === "falta");
-    document.getElementById("scan-result-box").style.display = "block";
-    document.getElementById("scan-result-text").innerHTML =
-      `<div style="color:var(--gold);margin-bottom:8px;font-size:15px">${sel.flag} <b>${sel.nome}</b> detectada</div>` +
-      `<div style="color:#2ecc71;margin-bottom:4px">✅ <b>${scanResultFilled.length}</b> com figurinha colada</div>` +
-      `<div style="color:#e74c3c;margin-bottom:4px">❌ <b>${emptyList.length}</b> slots vazios</div>` +
-      `<div style="color:#c8a84b;font-size:12px">${newOnes.length} serão marcadas como TENHO (novas)</div>` +
-      (scanResultFilled.length > 0 ? `<div style="font-size:11px;margin-top:6px;color:rgba(255,255,255,.4)">Nºs: ${scanResultFilled.slice().sort((a,b)=>a-b).join(", ")}</div>` : "");
+    if (sel) {
+      showScanResult(sel);
+    } else {
+      document.getElementById("scan-cod-detected").textContent = parsed.team_cod || "desconhecida";
+      const fbSelect = document.getElementById("scan-fallback-select");
+      if (fbSelect.options.length <= 1) {
+        TODOS.forEach(s => { const o = document.createElement("option"); o.value = s.cod; o.textContent = s.flag + " " + s.nome; fbSelect.appendChild(o); });
+      }
+      document.getElementById("scan-fallback-section").style.display = "block";
+    }
   } catch(e) {
     showToast("Erro: " + e.message.slice(0, 60), "error");
     console.error(e);
