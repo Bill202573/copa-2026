@@ -175,6 +175,11 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
 #scan-analyze-btn:disabled{opacity:.35;cursor:not-allowed}
 .scan-result-box{display:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;margin-bottom:12px}
 .scan-confirm-btn{width:100%;background:var(--green);border:none;border-radius:8px;padding:11px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;cursor:pointer;color:#fff;margin-top:12px}
+.scan-num-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.scan-num{width:38px;height:42px;border-radius:6px;border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;cursor:pointer;user-select:none;transition:all .15s}
+.scan-num.detected{background:#2ecc71;color:#fff;border-color:#27ae60}
+.scan-num.empty{background:rgba(255,255,255,.04);color:rgba(255,255,255,.3)}
+.scan-num:active{transform:scale(.9)}
 
 /* TOAST */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);padding:11px 24px;border-radius:30px;font-weight:700;font-size:14px;z-index:9999;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s}
@@ -306,7 +311,9 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
     <button id="scan-analyze-btn" onclick="runScan()" disabled>🔍 ANALISAR FOTO</button>
     <div id="scan-result-box" class="scan-result-box">
       <div id="scan-result-text"></div>
-      <button class="scan-confirm-btn" onclick="confirmScan()">✅ MARCAR COMO TENHO</button>
+      <div class="scan-lbl" style="margin-top:12px">Clique para ajustar:</div>
+      <div id="scan-num-grid" class="scan-num-grid"></div>
+      <button class="scan-confirm-btn" onclick="confirmScan()">✅ CONFIRMAR E MARCAR</button>
     </div>
     <div id="scan-fallback-section" style="display:none">
       <div style="color:var(--gold);font-size:13px;margin-bottom:8px">⚠️ Seleção <b id="scan-cod-detected"></b> não está na lista — selecione manualmente:</div>
@@ -886,19 +893,55 @@ window.handleScanImage = function(input) {
 };
 
 let scanRawFilled = [];
+let scanConfirmedFilled = {};
 
-function showScanResult(sel) {
-  scanSelectedCod = sel.cod;
-  scanResultFilled = scanRawFilled.filter(n => n >= 1 && n <= sel.total);
-  const emptyCount = sel.total - scanResultFilled.length;
+function renderScanNumGrid(sel) {
+  const grid = document.getElementById("scan-num-grid");
+  grid.innerHTML = "";
+  for (let i = 1; i <= sel.total; i++) {
+    const isDetected = scanRawFilled.includes(i);
+    const isConfirmed = scanConfirmedFilled[i] !== undefined ? scanConfirmedFilled[i] : isDetected;
+    const div = document.createElement("div");
+    div.className = "scan-num " + (isConfirmed ? "detected" : "empty");
+    div.textContent = i;
+    div.onclick = () => {
+      scanConfirmedFilled[i] = !scanConfirmedFilled[i];
+      updateScanNumGrid(sel);
+    };
+    grid.appendChild(div);
+  }
+}
+
+function updateScanNumGrid(sel) {
+  const grid = document.getElementById("scan-num-grid");
+  for (let i = 1; i <= sel.total; i++) {
+    const el = grid.children[i - 1];
+    const isConfirmed = scanConfirmedFilled[i];
+    el.className = "scan-num " + (isConfirmed ? "detected" : "empty");
+  }
+  scanResultFilled = Object.keys(scanConfirmedFilled).map(Number).filter(n => scanConfirmedFilled[n]);
+  updateScanResultText(sel);
+}
+
+function updateScanResultText(sel) {
   const newOnes = scanResultFilled.filter(n => getStatus(sel.cod, n) === "falta");
-  document.getElementById("scan-result-box").style.display = "block";
+  const emptyCount = sel.total - scanResultFilled.length;
   document.getElementById("scan-result-text").innerHTML =
     `<div style="color:var(--gold);margin-bottom:8px;font-size:15px">${sel.flag} <b>${sel.nome}</b></div>` +
     `<div style="color:#2ecc71;margin-bottom:4px">✅ <b>${scanResultFilled.length}</b> com figurinha colada</div>` +
     `<div style="color:#e74c3c;margin-bottom:4px">❌ <b>${emptyCount}</b> slots vazios</div>` +
     `<div style="color:#c8a84b;font-size:12px">${newOnes.length} serão marcadas como TENHO (novas)</div>` +
     (scanResultFilled.length > 0 ? `<div style="font-size:11px;margin-top:6px;color:rgba(255,255,255,.4)">Nºs: ${scanResultFilled.slice().sort((a,b)=>a-b).join(", ")}</div>` : "");
+}
+
+function showScanResult(sel) {
+  scanSelectedCod = sel.cod;
+  scanResultFilled = scanRawFilled.filter(n => n >= 1 && n <= sel.total);
+  scanConfirmedFilled = {};
+  scanResultFilled.forEach(n => { scanConfirmedFilled[n] = true; });
+  document.getElementById("scan-result-box").style.display = "block";
+  updateScanResultText(sel);
+  renderScanNumGrid(sel);
 }
 
 window.useFallbackTeam = function() {
