@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a1628">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Copa 2026">
+<title>⚽ Copa 2026 — Figurinhas</title>
+
+<script>
+const manifestData = {
+  name: "Copa 2026 - Figurinhas",
+  short_name: "Copa 2026",
+  start_url: "./",
+  display: "standalone",
+  background_color: "#0a1628",
+  theme_color: "#0a1628",
+  orientation: "portrait",
+  icons: [
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%230a1628'/><text y='140' x='20' font-size='140'>⚽</text></svg>", sizes: "192x192", type: "image/svg+xml" },
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%230a1628'/><text y='380' x='50' font-size='380'>⚽</text></svg>", sizes: "512x512", type: "image/svg+xml" }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifestData)], {type:'application/json'});
+document.write('<link rel="manifest" href="' + URL.createObjectURL(blob) + '">');
+</script>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230a1628'/><text y='125' x='22' font-size='110'>⚽</text></svg>">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--gold:#c8a84b;--gold-light:#f0d060;--dark:#060f24;--dark2:#0a1628;--dark3:#0f2347;--green:#2ecc71;--red:#e74c3c}
+html,body{height:100%;background:var(--dark);color:#fff;font-family:'Barlow',sans-serif;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 100%);min-height:100dvh}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px}
+
+/* SYNC STATUS */
+#sync-bar{display:flex;align-items:center;justify-content:center;gap:6px;padding:4px 0;font-size:11px;letter-spacing:.5px;transition:all .3s}
+#sync-bar.syncing{color:var(--gold)}
+#sync-bar.ok{color:var(--green)}
+#sync-bar.offline{color:rgba(255,255,255,.35)}
+#sync-bar.error{color:var(--red)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.sync-dot.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* HEADER */
+#header{position:sticky;top:0;z-index:200;background:rgba(6,15,36,.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(200,168,75,.2);padding:8px 14px 0}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.app-title{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);letter-spacing:2px;line-height:1}
+.app-sub{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:1px}
+.pct-num{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);line-height:1;transition:color .3s;text-align:right}
+.pct-num.done{color:var(--green)}
+.pct-sub{font-size:10px;color:rgba(255,255,255,.4);text-align:right}
+.progress-bar{height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-bottom:8px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));border-radius:2px;transition:width .4s ease}
+.progress-fill.done{background:var(--green)}
+
+/* TABS */
+.tabs{display:flex;gap:2px}
+.tab-btn{background:none;border:none;border-bottom:3px solid transparent;color:rgba(255,255,255,.4);font-family:'Bebas Neue',sans-serif;font-size:15px;padding:6px 14px;cursor:pointer;transition:all .2s;letter-spacing:.5px}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* CONTENT */
+#content{padding:12px 12px 80px;max-width:600px;margin:0 auto}
+
+/* VOICE PANEL */
+.voice-panel{background:rgba(200,168,75,.07);border:1px solid rgba(200,168,75,.22);border-radius:14px;padding:12px;margin-bottom:14px}
+.voice-label{text-align:center;font-size:10px;color:rgba(255,255,255,.45);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.voice-row{display:flex;align-items:center;gap:10px}
+.mic-btn{border:none;cursor:pointer;border-radius:50%;width:52px;height:52px;font-size:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s}
+.mic-btn.idle{background:linear-gradient(135deg,#b8940a,#e8c830);box-shadow:0 4px 14px rgba(200,168,75,.4)}
+.mic-btn.idle:active{transform:scale(.93)}
+.mic-btn.listening{background:linear-gradient(135deg,#c0392b,#e74c3c);animation:vpulse 1s ease infinite}
+@keyframes vpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.voice-input-wrap{display:flex;gap:6px;flex:1}
+.voice-input{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:10px 12px;color:#fff;font-family:'Barlow',sans-serif;font-size:14px;min-width:0}
+.voice-input::placeholder{color:rgba(255,255,255,.3)}
+.voice-input:focus{outline:none;border-color:rgba(200,168,75,.5)}
+.search-btn{background:var(--gold);border:none;border-radius:8px;padding:0 14px;color:#000;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;cursor:pointer;white-space:nowrap}
+.search-btn:active{opacity:.8}
+.voice-status{text-align:center;font-size:13px;margin-top:8px;color:rgba(255,255,255,.55);min-height:18px}
+.voice-status.listening{color:var(--red)}
+.voice-result{margin-top:10px;border-radius:10px;padding:10px 14px;font-size:13px;text-align:center}
+.voice-result.ok{background:rgba(46,204,113,.1);border:1px solid #27ae60}
+.voice-result.err{background:rgba(231,76,60,.12);border:1px solid var(--red);color:var(--red)}
+.result-country{font-size:13px;color:rgba(255,255,255,.65);margin-bottom:4px}
+.result-status{font-size:17px;font-weight:700;margin-bottom:8px}
+.result-status.tenho{color:var(--green)}
+.result-status.repetida{color:var(--gold)}
+.result-status.falta{color:var(--red)}
+.mark-btn{background:var(--green);border:none;color:#fff;padding:8px 22px;border-radius:20px;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:700;font-size:13px}
+.mark-btn:active{opacity:.8}
+
+/* FILTROS */
+.filter-input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;color:#fff;font-family:'Barlow',sans-serif;font-size:14px;margin-bottom:10px}
+.filter-input::placeholder{color:rgba(255,255,255,.28)}
+.filter-input:focus{outline:none;border-color:rgba(200,168,75,.4)}
+.grupo-btns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.grupo-btn{background:rgba(255,255,255,.07);border:none;border-radius:20px;padding:4px 11px;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.5px;cursor:pointer;transition:background .15s}
+.grupo-btn.active{background:var(--gold);color:#000}
+.grupo-btn:active{opacity:.75}
+
+/* SELEÇÕES */
+.sel-list{display:flex;flex-direction:column;gap:7px}
+.sel-row{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:11px 13px;cursor:pointer;transition:background .15s,border-color .15s}
+.sel-row:active{background:rgba(200,168,75,.08)}
+.sel-row.open{background:rgba(200,168,75,.09);border-color:rgba(200,168,75,.35);border-radius:12px 12px 0 0}
+.sel-header{display:flex;align-items:center;justify-content:space-between}
+.sel-left{display:flex;align-items:center;gap:10px}
+.sel-flag{font-size:20px;line-height:1}
+.sel-name{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:.5px}
+.sel-info{font-size:11px;color:rgba(255,255,255,.35);margin-top:1px}
+.sel-pct{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);transition:color .3s}
+.sel-pct.done{color:var(--green)}
+.sel-count{font-size:10px;color:rgba(255,255,255,.3);text-align:right}
+.sel-bar{height:3px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:8px}
+.sel-bar-fill{height:100%;border-radius:2px;transition:width .3s;background:linear-gradient(90deg,var(--gold),var(--gold-light))}
+.sel-bar-fill.done{background:var(--green)}
+
+/* STICKERS */
+.stickers-panel{background:rgba(0,0,0,.28);border:1px solid rgba(200,168,75,.28);border-top:none;border-radius:0 0 12px 12px;padding:12px;margin-bottom:2px}
+.stickers-hint{font-size:10px;color:rgba(255,255,255,.3);margin-bottom:10px;letter-spacing:.5px;text-transform:uppercase}
+.stickers-grid{display:flex;flex-wrap:wrap;gap:5px}
+.sticker{width:40px;height:46px;border-radius:7px;border:2px solid #1a3360;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;cursor:pointer;transition:transform .1s;user-select:none;position:relative}
+.sticker:active{transform:scale(.9)}
+.sticker.falta{background:#0b1d3a;color:#3a5a8e}
+.sticker.tenho{background:linear-gradient(135deg,#1a6b3c,#2ecc71);color:#fff;border-color:#27ae60;box-shadow:0 0 8px rgba(46,204,113,.3)}
+.sticker.repetida{background:linear-gradient(135deg,#7a5500,#d4a017);color:#fff;border-color:var(--gold);box-shadow:0 0 8px rgba(200,168,75,.3)}
+.sticker.hl{outline:3px solid var(--red);outline-offset:2px;animation:hlpulse .7s ease infinite}
+@keyframes hlpulse{0%,100%{box-shadow:0 0 6px var(--red)}50%{box-shadow:0 0 16px var(--red)}}
+.stickers-legend{font-size:10px;margin-top:10px;color:rgba(255,255,255,.35);display:flex;gap:14px}
+
+/* REPETIDAS */
+.rep-header{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px}
+.rep-grid{display:flex;flex-wrap:wrap;gap:7px}
+.rep-chip{background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.28);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;transition:background .15s}
+.rep-chip:active{background:rgba(200,168,75,.22)}
+.rep-num{color:var(--gold);font-weight:700}
+.empty{text-align:center;padding:50px 0;color:rgba(255,255,255,.22);font-size:14px}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 8px;text-align:center}
+.stat-icon{font-size:20px;margin-bottom:4px}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:26px}
+.stat-lbl{font-size:10px;color:rgba(255,255,255,.38);letter-spacing:1px;text-transform:uppercase}
+.sel-progress-list{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;margin-bottom:14px}
+.sel-progress-title{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);letter-spacing:2px;margin-bottom:12px}
+.sel-prog-row{margin-bottom:8px}
+.sel-prog-header{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.sel-prog-bar{height:4px;background:rgba(255,255,255,.07);border-radius:2px}
+.sel-prog-fill{height:100%;border-radius:2px;transition:width .3s}
+.reset-btn{width:100%;background:rgba(231,76,60,.1);border:1px solid var(--red);color:var(--red);border-radius:10px;padding:13px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;cursor:pointer}
+.reset-btn:active{background:rgba(231,76,60,.2)}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);padding:11px 24px;border-radius:30px;font-weight:700;font-size:14px;z-index:9999;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.success{background:var(--green);color:#fff}
+#toast.warning{background:var(--gold);color:#000}
+#toast.error{background:var(--red);color:#fff}
+
+/* LOADING */
+#loading{position:fixed;inset:0;background:var(--dark2);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px}
+#loading .logo{font-size:64px}
+#loading .txt{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);letter-spacing:3px}
+#loading .sub{font-size:13px;color:rgba(255,255,255,.4)}
+.loader{width:36px;height:36px;border:3px solid rgba(200,168,75,.2);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
+
+/* INSTALL BANNER */
+#install-banner{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,22,40,.97);border-top:1px solid rgba(200,168,75,.3);padding:14px 16px;z-index:500;flex-direction:column;gap:10px}
+#install-banner.visible{display:flex}
+.install-text{font-size:13px;color:rgba(255,255,255,.8);text-align:center}
+.install-text strong{color:var(--gold)}
+.install-btns{display:flex;gap:8px}
+.install-ok{flex:1;background:var(--gold);border:none;border-radius:8px;padding:10px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;cursor:pointer;color:#000}
+.install-skip{background:none;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:10px 14px;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="logo">⚽</div>
+  <div class="txt">Copa 2026</div>
+  <div class="loader"></div>
+  <div class="sub">Carregando sua coleção...</div>
+</div>
+
+<!-- HEADER -->
+<div id="header" style="display:none">
+  <div id="sync-bar" class="offline">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-text">Offline</span>
+  </div>
+  <div class="header-top">
+    <div>
+      <div class="app-title">⚽ Copa 2026</div>
+      <div class="app-sub">Controle de Figurinhas Panini</div>
+    </div>
+    <div>
+      <div class="pct-num" id="pct-num">0%</div>
+      <div class="pct-sub" id="pct-sub">0 de 980</div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="album" onclick="switchTab('album')">📖 Álbum</button>
+    <button class="tab-btn" data-tab="repetidas" onclick="switchTab('repetidas')">🔁 Repetidas</button>
+    <button class="tab-btn" data-tab="stats" onclick="switchTab('stats')">📊 Stats</button>
+  </div>
+</div>
+
+<!-- CONTEÚDO -->
+<div id="content" style="display:none">
+
+  <!-- ÁLBUM -->
+  <div id="tab-album">
+    <div class="voice-panel">
+      <div class="voice-label">🎙️ Buscar por voz ou digitar — Ex: "Brasil 5" · "ARG 12"</div>
+      <div class="voice-row">
+        <button class="mic-btn idle" id="mic-btn" onclick="toggleVoice()">🎙️</button>
+        <div class="voice-input-wrap">
+          <input class="voice-input" id="voice-input" type="text" placeholder='Ex: "Brasil 5" ou "ARG 12"' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+          <button class="search-btn" onclick="searchByText()">BUSCAR</button>
+        </div>
+      </div>
+      <div class="voice-status" id="voice-status"></div>
+      <div id="voice-result" style="display:none"></div>
+    </div>
+    <input class="filter-input" id="filter-input" type="text" placeholder="🔍 Filtrar seleção (Brasil, Alemanha, ESP…)" autocomplete="off" oninput="renderAlbum()">
+    <div class="grupo-btns" id="grupo-btns"></div>
+    <div class="sel-list" id="sel-list"></div>
+  </div>
+
+  <!-- REPETIDAS -->
+  <div id="tab-repetidas" style="display:none">
+    <div class="rep-header" id="rep-header"></div>
+    <div class="rep-grid" id="rep-grid"></div>
+  </div>
+
+  <!-- STATS -->
+  <div id="tab-stats" style="display:none">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val" id="s-tenho" style="color:#2ecc71">0</div><div class="stat-lbl">Tenho</div></div>
+      <div class="stat-card"><div class="stat-icon">❌</div><div class="stat-val" id="s-falta" style="color:#e74c3c">980</div><div class="stat-lbl">Falta</div></div>
+      <div class="stat-card"><div class="stat-icon">🔁</div><div class="stat-val" id="s-rep" style="color:#c8a84b">0</div><div class="stat-lbl">Repetidas</div></div>
+    </div>
+    <div class="sel-progress-list">
+      <div class="sel-progress-title">🏆 Progresso por Seleção</div>
+      <div id="stats-list"></div>
+    </div>
+    <button class="reset-btn" onclick="resetCollection()">🗑️ RESETAR TODA A COLEÇÃO</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="install-banner">
+  <div class="install-text">📲 Instale na sua <strong>tela inicial</strong> para usar offline!</div>
+  <div class="install-btns">
+    <button class="install-ok" id="install-ok-btn">INSTALAR</button>
+    <button class="install-skip" onclick="dismissInstall()">Agora não</button>
+  </div>
+</div>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+// ── CONFIG FIREBASE ──────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyDL6uTsvOpaYJPm_ctsjINMsI1WfgKRrOw",
+  authDomain: "figurinha-copa-2026.firebaseapp.com",
+  projectId: "figurinha-copa-2026",
+  storageBucket: "figurinha-copa-2026.firebasestorage.app",
+  messagingSenderId: "462767524418",
+  appId: "1:462767524418:web:2b0933f09a9a66b4957bdb"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const DOC_ID = "colecao_william"; // ID único da sua coleção
+const docRef = doc(db, "figurinhas", DOC_ID);
+
+// ── DADOS ────────────────────────────────────
+const SELECOES = [
+  {cod:"USA",nome:"Estados Unidos",grupo:"A",total:20,flag:"🇺🇸"},
+  {cod:"PAN",nome:"Panamá",grupo:"A",total:18,flag:"🇵🇦"},
+  {cod:"CAN",nome:"Canadá",grupo:"A",total:18,flag:"🇨🇦"},
+  {cod:"OMA",nome:"Omã",grupo:"A",total:18,flag:"🇴🇲"},
+  {cod:"ARG",nome:"Argentina",grupo:"B",total:20,flag:"🇦🇷"},
+  {cod:"MAR",nome:"Marrocos",grupo:"B",total:18,flag:"🇲🇦"},
+  {cod:"IRQ",nome:"Iraque",grupo:"B",total:18,flag:"🇮🇶"},
+  {cod:"UKR",nome:"Ucrânia",grupo:"B",total:18,flag:"🇺🇦"},
+  {cod:"MEX",nome:"México",grupo:"C",total:20,flag:"🇲🇽"},
+  {cod:"CMR",nome:"Camarões",grupo:"C",total:18,flag:"🇨🇲"},
+  {cod:"BEL",nome:"Bélgica",grupo:"C",total:18,flag:"🇧🇪"},
+  {cod:"JPN",nome:"Japão",grupo:"C",total:18,flag:"🇯🇵"},
+  {cod:"POR",nome:"Portugal",grupo:"D",total:20,flag:"🇵🇹"},
+  {cod:"BRA",nome:"Brasil",grupo:"D",total:20,flag:"🇧🇷"},
+  {cod:"EGY",nome:"Egito",grupo:"D",total:18,flag:"🇪🇬"},
+  {cod:"TZA",nome:"Tanzânia",grupo:"D",total:18,flag:"🇹🇿"},
+  {cod:"ESP",nome:"Espanha",grupo:"E",total:20,flag:"🇪🇸"},
+  {cod:"ALG",nome:"Argélia",grupo:"E",total:18,flag:"🇩🇿"},
+  {cod:"CHI",nome:"Chile",grupo:"E",total:18,flag:"🇨🇱"},
+  {cod:"AUS",nome:"Austrália",grupo:"E",total:18,flag:"🇦🇺"},
+  {cod:"FRA",nome:"França",grupo:"F",total:20,flag:"🇫🇷"},
+  {cod:"COD",nome:"Congo",grupo:"F",total:18,flag:"🇨🇩"},
+  {cod:"COL",nome:"Colômbia",grupo:"F",total:18,flag:"🇨🇴"},
+  {cod:"GUE",nome:"Guiné",grupo:"F",total:18,flag:"🇬🇳"},
+  {cod:"ENG",nome:"Inglaterra",grupo:"G",total:20,flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"},
+  {cod:"SEN",nome:"Senegal",grupo:"G",total:18,flag:"🇸🇳"},
+  {cod:"NED",nome:"Holanda",grupo:"G",total:18,flag:"🇳🇱"},
+  {cod:"SRB",nome:"Sérvia",grupo:"G",total:18,flag:"🇷🇸"},
+  {cod:"GER",nome:"Alemanha",grupo:"H",total:20,flag:"🇩🇪"},
+  {cod:"JOR",nome:"Jordânia",grupo:"H",total:18,flag:"🇯🇴"},
+  {cod:"CRC",nome:"Costa Rica",grupo:"H",total:18,flag:"🇨🇷"},
+  {cod:"THA",nome:"Tailândia",grupo:"H",total:18,flag:"🇹🇭"},
+  {cod:"ITA",nome:"Itália",grupo:"I",total:20,flag:"🇮🇹"},
+  {cod:"CIV",nome:"Costa do Marfim",grupo:"I",total:18,flag:"🇨🇮"},
+  {cod:"HND",nome:"Honduras",grupo:"I",total:18,flag:"🇭🇳"},
+  {cod:"NOR",nome:"Noruega",grupo:"I",total:18,flag:"🇳🇴"},
+  {cod:"NGA",nome:"Nigéria",grupo:"J",total:18,flag:"🇳🇬"},
+  {cod:"IRN",nome:"Irã",grupo:"J",total:18,flag:"🇮🇷"},
+  {cod:"PER",nome:"Peru",grupo:"J",total:18,flag:"🇵🇪"},
+  {cod:"SUI",nome:"Suíça",grupo:"J",total:18,flag:"🇨🇭"},
+  {cod:"CRO",nome:"Croácia",grupo:"K",total:18,flag:"🇭🇷"},
+  {cod:"SAU",nome:"Arábia Saudita",grupo:"K",total:18,flag:"🇸🇦"},
+  {cod:"ECU",nome:"Equador",grupo:"K",total:18,flag:"🇪🇨"},
+  {cod:"TUR",nome:"Turquia",grupo:"K",total:18,flag:"🇹🇷"},
+  {cod:"URU",nome:"Uruguai",grupo:"L",total:18,flag:"🇺🇾"},
+  {cod:"TUN",nome:"Tunísia",grupo:"L",total:18,flag:"🇹🇳"},
+  {cod:"SVK",nome:"Eslováquia",grupo:"L",total:18,flag:"🇸🇰"},
+  {cod:"KOR",nome:"Coreia do Sul",grupo:"L",total:18,flag:"🇰🇷"},
+];
+const ESPECIAIS = [
+  {cod:"FWC",nome:"Copa / Mascote / Bola",grupo:"ESPECIAIS",total:4,flag:"🏆"},
+  {cod:"EST",nome:"Estádios",grupo:"ESPECIAIS",total:16,flag:"🏟️"},
+  {cod:"ESC",nome:"Escudos Especiais",grupo:"ESPECIAIS",total:48,flag:"🛡️"},
+];
+const TODOS = [...SELECOES,...ESPECIAIS];
+const TOTAL_GERAL = TODOS.reduce((a,s)=>a+s.total,0);
+
+const ALIASES = {
+  "brasil":"BRA","brazil":"BRA","argentina":"ARG","portugal":"POR",
+  "espanha":"ESP","franca":"FRA","fransa":"FRA","alemanha":"GER",
+  "italia":"ITA","inglaterra":"ENG","holanda":"NED","croacia":"CRO",
+  "uruguai":"URU","colombia":"COL","equador":"ECU","peru":"PER",
+  "chile":"CHI","mexico":"MEX","canada":"CAN","eua":"USA",
+  "estados unidos":"USA","japao":"JPN","coreia":"KOR","coreia do sul":"KOR",
+  "australia":"AUS","marrocos":"MAR","senegal":"SEN","nigeria":"NGA",
+  "turquia":"TUR","suica":"SUI","noruega":"NOR","servia":"SRB",
+  "belgica":"BEL","panama":"PAN","arabia":"SAU","ira":"IRN","iran":"IRN",
+  "iraque":"IRQ","egito":"EGY","ucrania":"UKR","costa rica":"CRC",
+  "costa do marfim":"CIV","camaroes":"CMR","eslovaquia":"SVK",
+  "tunisia":"TUN","jordania":"JOR","oman":"OMA","tanzania":"TZA",
+  "guine":"GUE","tailandia":"THA","honduras":"HND","congo":"COD",
+  "argelia":"ALG","copa":"FWC","estadios":"EST","escudos":"ESC","saudita":"SAU"
+};
+
+// ── ESTADO ───────────────────────────────────
+let col = {};
+let activeTab = "album";
+let activeGrupo = "TODAS";
+let expandedCod = null;
+let voiceResultData = null;
+let recognition = null;
+let voiceListening = false;
+let saveTimer = null;
+let ignoreSnapshot = false;
+
+// ── FIREBASE: CARREGAR ───────────────────────
+async function loadFromFirebase() {
+  setSyncStatus("syncing", "Conectando...");
+  try {
+    // Carrega local primeiro para ser rápido
+    try { const s = localStorage.getItem("copa2026_col"); if(s) col = JSON.parse(s); } catch{}
+
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      col = snap.data().col || {};
+      localStorage.setItem("copa2026_col", JSON.stringify(col));
+    } else {
+      // Primeiro acesso: salva o que tem local
+      await setDoc(docRef, { col });
+    }
+    setSyncStatus("ok", "Sincronizado ✓");
+    showApp();
+
+    // Listener em tempo real para outros dispositivos
+    onSnapshot(docRef, (snap) => {
+      if (ignoreSnapshot) { ignoreSnapshot = false; return; }
+      if (snap.exists()) {
+        col = snap.data().col || {};
+        localStorage.setItem("copa2026_col", JSON.stringify(col));
+        updateHeader();
+        if (activeTab === "album") renderAlbum();
+        if (activeTab === "repetidas") renderRepetidas();
+        if (activeTab === "stats") renderStats();
+        setSyncStatus("ok", "Sincronizado ✓");
+      }
+    });
+
+  } catch(e) {
+    console.error(e);
+    // Usa localStorage como fallback
+    try { const s = localStorage.getItem("copa2026_col"); if(s) col = JSON.parse(s); } catch{}
+    setSyncStatus("offline", "Offline — dados locais");
+    showApp();
+  }
+}
+
+// ── FIREBASE: SALVAR ─────────────────────────
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    localStorage.setItem("copa2026_col", JSON.stringify(col));
+    setSyncStatus("syncing", "Salvando...");
+    try {
+      ignoreSnapshot = true;
+      await setDoc(docRef, { col });
+      setSyncStatus("ok", "Sincronizado ✓");
+      setTimeout(()=> setSyncStatus("ok","☁️ Na nuvem"), 1500);
+    } catch(e) {
+      setSyncStatus("offline", "Sem conexão — salvo local");
+    }
+  }, 800);
+}
+
+function setSyncStatus(type, text) {
+  const bar = document.getElementById("sync-bar");
+  const dot = document.getElementById("sync-dot");
+  const txt = document.getElementById("sync-text");
+  bar.className = type;
+  dot.className = "sync-dot" + (type==="syncing"?" spin":"");
+  txt.textContent = text;
+}
+
+function showApp() {
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("header").style.display = "block";
+  document.getElementById("content").style.display = "block";
+  updateHeader();
+  renderGrupoBtns();
+  renderAlbum();
+}
+
+// ── HELPERS ──────────────────────────────────
+function norm(s) {
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"");
+}
+function getStatus(cod,num){ return col[cod+"_"+num]||"falta"; }
+
+function setStatus(cod,num,status){
+  const key=cod+"_"+num;
+  if(status==="falta") delete col[key]; else col[key]=status;
+  scheduleSave();
+  updateHeader();
+}
+
+function cycleStatus(cod,num){
+  const cur=getStatus(cod,num);
+  const next=cur==="falta"?"tenho":cur==="tenho"?"repetida":"falta";
+  setStatus(cod,num,next);
+  const msgs={tenho:"✅ TENHO!",repetida:"🔁 REPETIDA!",falta:"❌ Removida"};
+  const types={tenho:"success",repetida:"warning",falta:"error"};
+  showToast(msgs[next],types[next]);
+  const el=document.querySelector(`.sticker[data-cod="${cod}"][data-num="${num}"]`);
+  if(el) el.className=`sticker ${next}${voiceResultData&&voiceResultData.cod===cod&&voiceResultData.num===num?" hl":""}`;
+  updateSelRow(cod);
+}
+
+// ── STATS ────────────────────────────────────
+function calcStats(){
+  let tenho=0,repetida=0;
+  for(const k of Object.keys(col)){
+    if(col[k]==="tenho")tenho++;
+    else if(col[k]==="repetida")repetida++;
+  }
+  return{tenho,repetida,falta:TOTAL_GERAL-tenho-repetida,total:TOTAL_GERAL};
+}
+
+function selStats(sel){
+  let tenho=0,repetida=0;
+  for(let i=1;i<=sel.total;i++){
+    const s=getStatus(sel.cod,i);
+    if(s==="tenho")tenho++;else if(s==="repetida")repetida++;
+  }
+  return{tenho,repetida,falta:sel.total-tenho-repetida,pct:Math.round((tenho/sel.total)*100)};
+}
+
+function updateHeader(){
+  const s=calcStats();
+  const pct=Math.round((s.tenho/s.total)*100);
+  const el=document.getElementById("pct-num");
+  el.textContent=pct+"%";
+  el.className="pct-num"+(pct===100?" done":"");
+  document.getElementById("pct-sub").textContent=s.tenho+" de "+s.total;
+  const fill=document.getElementById("progress-fill");
+  fill.style.width=pct+"%";
+  fill.className="progress-fill"+(pct===100?" done":"");
+}
+
+function updateSelRow(cod){
+  const sel=TODOS.find(s=>s.cod===cod);if(!sel)return;
+  const ss=selStats(sel);
+  const q=(cls)=>document.querySelector(`.sel-row[data-cod="${cod}"] .${cls}`);
+  const pctEl=q("sel-pct"),countEl=q("sel-count"),infoEl=q("sel-info"),fillEl=q("sel-bar-fill");
+  if(pctEl){pctEl.textContent=ss.pct+"%";pctEl.className="sel-pct"+(ss.pct===100?" done":"");}
+  if(countEl)countEl.textContent=ss.tenho+"/"+sel.total;
+  if(infoEl)infoEl.textContent=`G-${sel.grupo} · ${ss.tenho} tenho · ${ss.repetida} rep · ${ss.falta} falta`;
+  if(fillEl){fillEl.style.width=ss.pct+"%";fillEl.className="sel-bar-fill"+(ss.pct===100?" done":"");}
+  updateHeader();
+}
+
+// ── RENDER ───────────────────────────────────
+function renderGrupoBtns(){
+  const grupos=["TODAS","A","B","C","D","E","F","G","H","I","J","K","L","ESPECIAIS"];
+  document.getElementById("grupo-btns").innerHTML=grupos.map(g=>
+    `<button class="grupo-btn${activeGrupo===g?" active":""}" onclick="setGrupo('${g}')">${g==="TODAS"?"TODAS":g==="ESPECIAIS"?"⭐ ESP":"G-"+g}</button>`
+  ).join("");
+}
+
+window.setGrupo=function(g){activeGrupo=g;renderGrupoBtns();renderAlbum();};
+
+window.renderAlbum=function(){
+  const q=norm(document.getElementById("filter-input").value);
+  const list=TODOS.filter(sel=>{
+    if(activeGrupo!=="TODAS"&&sel.grupo!==activeGrupo)return false;
+    if(q)return norm(sel.nome).includes(q)||norm(sel.cod).includes(q);
+    return true;
+  });
+  document.getElementById("sel-list").innerHTML=list.map(sel=>{
+    const ss=selStats(sel);
+    const isOpen=expandedCod===sel.cod;
+    return`<div>
+      <div class="sel-row${isOpen?" open":""}" data-cod="${sel.cod}" onclick="toggleSel('${sel.cod}')">
+        <div class="sel-header">
+          <div class="sel-left">
+            <span class="sel-flag">${sel.flag}</span>
+            <div>
+              <div class="sel-name">${sel.nome} <span style="color:rgba(255,255,255,.28);font-size:11px">(${sel.cod})</span></div>
+              <div class="sel-info">G-${sel.grupo} · ${ss.tenho} tenho · ${ss.repetida} rep · ${ss.falta} falta</div>
+            </div>
+          </div>
+          <div>
+            <div class="sel-pct${ss.pct===100?" done":""}">${ss.pct}%</div>
+            <div class="sel-count">${ss.tenho}/${sel.total}</div>
+          </div>
+        </div>
+        <div class="sel-bar"><div class="sel-bar-fill${ss.pct===100?" done":""}" style="width:${ss.pct}%"></div></div>
+      </div>
+      ${isOpen?renderStickers(sel):""}
+    </div>`;
+  }).join("");
+};
+
+function renderStickers(sel){
+  const items=[];
+  for(let i=1;i<=sel.total;i++){
+    const st=getStatus(sel.cod,i);
+    const hl=voiceResultData&&voiceResultData.cod===sel.cod&&voiceResultData.num===i?" hl":"";
+    items.push(`<div class="sticker ${st}${hl}" data-cod="${sel.cod}" data-num="${i}" onclick="cycleStatus('${sel.cod}',${i})">${i}</div>`);
+  }
+  return`<div class="stickers-panel">
+    <div class="stickers-hint">Toque para ciclar: 🟦 Falta → 🟩 Tenho → 🟨 Repetida</div>
+    <div class="stickers-grid">${items.join("")}</div>
+    <div class="stickers-legend"><span>🟩 Tenho</span><span>🟨 Repetida</span><span>🟦 Falta</span></div>
+  </div>`;
+}
+
+window.toggleSel=function(cod){
+  expandedCod=expandedCod===cod?null:cod;
+  renderAlbum();
+  if(expandedCod){
+    setTimeout(()=>{
+      const el=document.querySelector(`.sel-row[data-cod="${cod}"]`);
+      if(el)el.scrollIntoView({behavior:"smooth",block:"start"});
+    },50);
+  }
+};
+
+// ── TABS ─────────────────────────────────────
+window.switchTab=function(tab){
+  activeTab=tab;
+  ["album","repetidas","stats"].forEach(t=>{
+    document.getElementById("tab-"+t).style.display=t===tab?"block":"none";
+    document.querySelector(`[data-tab="${t}"]`).className="tab-btn"+(t===tab?" active":"");
+  });
+  if(tab==="repetidas")renderRepetidas();
+  if(tab==="stats")renderStats();
+};
+
+// ── REPETIDAS ────────────────────────────────
+function renderRepetidas(){
+  const list=[];
+  for(const sel of TODOS)for(let i=1;i<=sel.total;i++)if(getStatus(sel.cod,i)==="repetida")list.push({sel,num:i});
+  document.getElementById("rep-header").textContent=list.length+" figurinha(s) para troca";
+  const grid=document.getElementById("rep-grid");
+  grid.innerHTML=list.length===0
+    ?'<div class="empty">Nenhuma repetida ainda 😊</div>'
+    :list.map(({sel,num})=>`<div class="rep-chip" onclick="goToSel('${sel.cod}')">${sel.flag} ${sel.cod} <span class="rep-num">#${num}</span></div>`).join("");
+}
+
+window.goToSel=function(cod){
+  switchTab("album");expandedCod=cod;activeGrupo="TODAS";
+  document.getElementById("filter-input").value="";
+  renderGrupoBtns();renderAlbum();
+  setTimeout(()=>{const el=document.querySelector(`.sel-row[data-cod="${cod}"]`);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});},80);
+};
+
+// ── STATS ────────────────────────────────────
+function renderStats(){
+  const s=calcStats();
+  document.getElementById("s-tenho").textContent=s.tenho;
+  document.getElementById("s-falta").textContent=s.falta;
+  document.getElementById("s-rep").textContent=s.repetida;
+  const sorted=[...SELECOES].sort((a,b)=>selStats(b).pct-selStats(a).pct);
+  document.getElementById("stats-list").innerHTML=sorted.map(sel=>{
+    const ss=selStats(sel);
+    return`<div class="sel-prog-row">
+      <div class="sel-prog-header"><span>${sel.flag} ${sel.nome}</span><span style="color:${ss.pct===100?"#2ecc71":"#c8a84b"}">${ss.tenho}/${sel.total}</span></div>
+      <div class="sel-prog-bar"><div class="sel-prog-fill" style="width:${ss.pct}%;background:${ss.pct===100?"#2ecc71":"linear-gradient(90deg,#c8a84b,#f0d060)"}"></div></div>
+    </div>`;
+  }).join("");
+}
+
+window.resetCollection=function(){
+  if(!confirm("Apagar todo o progresso? Esta ação não pode ser desfeita."))return;
+  col={};scheduleSave();updateHeader();renderAlbum();showToast("Coleção resetada","error");
+};
+
+// ── VOZ ──────────────────────────────────────
+function parseCommand(text){
+  const n=norm(text);
+  const direct=n.match(/\b([a-z]{3})\s*(\d{1,2})\b/);
+  if(direct){const cod=direct[1].toUpperCase();if(TODOS.find(s=>s.cod===cod))return{cod,num:parseInt(direct[2])};}
+  let foundCod=null;
+  const sorted=Object.entries(ALIASES).sort((a,b)=>b[0].length-a[0].length);
+  for(const[alias,cod]of sorted){if(!cod)continue;if(n.includes(norm(alias))){foundCod=cod;break;}}
+  const numMatch=n.match(/\b(\d{1,2})\b/);
+  return{cod:foundCod,num:numMatch?parseInt(numMatch[1]):null};
+}
+
+function showVoiceResult(parsed,text){
+  const el=document.getElementById("voice-result");
+  if(!parsed.cod){
+    el.style.display="block";el.className="voice-result err";
+    el.innerHTML=`⚠️ Não entendi "${text}". Tente: "Brasil 5" ou "ARG 12"`;return;
+  }
+  const sel=TODOS.find(s=>s.cod===parsed.cod);
+  if(!sel){el.style.display="block";el.className="voice-result err";el.innerHTML="⚠️ Seleção não encontrada";return;}
+  if(!parsed.num){
+    voiceResultData=null;expandedCod=sel.cod;renderAlbum();
+    el.style.display="block";el.className="voice-result ok";
+    el.innerHTML=`${sel.flag} <b>${sel.nome}</b> aberta — veja as figurinhas abaixo`;
+    window.goToSel(sel.cod);return;
+  }
+  if(parsed.num<1||parsed.num>sel.total){
+    el.style.display="block";el.className="voice-result err";
+    el.innerHTML=`⚠️ Figurinha ${parsed.num} inválida para ${sel.nome} (máx ${sel.total})`;return;
+  }
+  const status=getStatus(sel.cod,parsed.num);
+  voiceResultData={cod:sel.cod,num:parsed.num};
+  expandedCod=sel.cod;renderAlbum();
+  const statusHtml=status==="tenho"
+    ?`<span class="result-status tenho">✅ VOCÊ TEM!</span>`
+    :status==="repetida"?`<span class="result-status repetida">🔁 REPETIDA!</span>`
+    :`<span class="result-status falta">❌ VOCÊ NÃO TEM</span>`;
+  const markHtml=status==="falta"
+    ?`<br><button class="mark-btn" onclick="markFromVoice('${sel.cod}',${parsed.num})">+ Marcar como TENHO</button>`:"";
+  el.style.display="block";el.className="voice-result ok";
+  el.innerHTML=`<div class="result-country">${sel.flag} <b>${sel.nome}</b> — Figurinha <b>#${parsed.num}</b></div>${statusHtml}${markHtml}`;
+  setTimeout(()=>{const s=document.querySelector(`.sticker[data-cod="${sel.cod}"][data-num="${parsed.num}"]`);if(s)s.scrollIntoView({behavior:"smooth",block:"center"});},100);
+}
+
+window.markFromVoice=function(cod,num){
+  setStatus(cod,num,"tenho");voiceResultData={cod,num};
+  showToast("✅ Marcada como TENHO!","success");
+  const sel=TODOS.find(s=>s.cod===cod);
+  const el=document.getElementById("voice-result");
+  el.innerHTML=`<div class="result-country">${sel.flag} <b>${sel.nome}</b> — Figurinha <b>#${num}</b></div><span class="result-status tenho">✅ VOCÊ TEM!</span>`;
+  updateSelRow(cod);
+  const s=document.querySelector(`.sticker[data-cod="${cod}"][data-num="${num}"]`);
+  if(s)s.className="sticker tenho hl";
+};
+
+window.searchByText=function(){
+  const input=document.getElementById("voice-input");
+  const text=input.value.trim();if(!text)return;
+  document.getElementById("voice-status").textContent=`"${text}"`;
+  document.getElementById("voice-status").className="voice-status";
+  showVoiceResult(parseCommand(text),text);
+  input.value="";
+};
+
+document.getElementById("voice-input").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();window.searchByText();}});
+
+window.toggleVoice=function(){voiceListening?stopVoice():startVoice();};
+
+window.cycleStatus=cycleStatus;
+
+function startVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showToast("⚠️ Use o campo de texto — voz não suportada","error");return;}
+  recognition=new SR();recognition.lang="pt-BR";recognition.continuous=false;recognition.interimResults=false;
+  recognition.onstart=()=>{
+    voiceListening=true;
+    document.getElementById("mic-btn").className="mic-btn listening";
+    document.getElementById("mic-btn").textContent="⏹";
+    document.getElementById("voice-status").textContent="🎙️ Ouvindo... fale agora";
+    document.getElementById("voice-status").className="voice-status listening";
+    document.getElementById("voice-result").style.display="none";
+  };
+  recognition.onresult=e=>{
+    const text=e.results[0][0].transcript;
+    document.getElementById("voice-status").textContent=`"${text}"`;
+    document.getElementById("voice-status").className="voice-status";
+    showVoiceResult(parseCommand(text),text);
+  };
+  recognition.onerror=e=>{
+    stopVoice();
+    if(e.error==="not-allowed")showToast("⚠️ Permita o microfone nas configurações","error");
+    else if(e.error==="no-speech")showToast("Não ouvi nada. Tente de novo.","warning");
+  };
+  recognition.onend=()=>stopVoice();
+  try{recognition.start();}catch{}
+}
+
+function stopVoice(){
+  voiceListening=false;
+  if(recognition){try{recognition.stop();}catch{}recognition=null;}
+  const btn=document.getElementById("mic-btn");
+  btn.className="mic-btn idle";btn.textContent="🎙️";
+  const st=document.getElementById("voice-status");
+  if(st.classList.contains("listening")){st.textContent="";st.className="voice-status";}
+}
+
+// ── TOAST ────────────────────────────────────
+let toastTimer;
+window.showToast=function(msg,type="success"){
+  clearTimeout(toastTimer);
+  const el=document.getElementById("toast");
+  el.textContent=msg;el.className="show "+type;
+  toastTimer=setTimeout(()=>{el.className=type;},2200);
+};
+
+// ── SERVICE WORKER ───────────────────────────
+if("serviceWorker"in navigator){
+  const sw=`const C="copa2026-v2";self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["./"])).then(()=>self.skipWaiting()));});self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(res&&res.status===200){const cl=res.clone();caches.open(C).then(c=>c.put(e.request,cl));}return res;}).catch(()=>caches.match("./"))))});`;
+  const url=URL.createObjectURL(new Blob([sw],{type:"text/javascript"}));
+  navigator.serviceWorker.register(url).catch(()=>{});
+}
+
+// ── INSTALL PROMPT ───────────────────────────
+let deferredPrompt;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();deferredPrompt=e;
+  if(!localStorage.getItem("installDismissed"))document.getElementById("install-banner").classList.add("visible");
+});
+document.getElementById("install-ok-btn").addEventListener("click",()=>{
+  document.getElementById("install-banner").classList.remove("visible");
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;}
+});
+window.dismissInstall=function(){
+  document.getElementById("install-banner").classList.remove("visible");
+  localStorage.setItem("installDismissed","1");
+};
+
+// ── INIT ─────────────────────────────────────
+loadFromFirebase();
+</script>
+</body>
+</html>
