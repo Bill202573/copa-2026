@@ -226,9 +226,12 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
       <div class="app-title">⚽ Copa 2026</div>
       <div class="app-sub">Controle de Figurinhas Panini</div>
     </div>
-    <div>
-      <div class="pct-num" id="pct-num">0%</div>
-      <div class="pct-sub" id="pct-sub">0 de 980</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <button onclick="refreshApp()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:4px;border-radius:8px;transition:all .2s" title="Atualizar aplicativo">🔄</button>
+      <div>
+        <div class="pct-num" id="pct-num">0%</div>
+        <div class="pct-sub" id="pct-sub">0 de 980</div>
+      </div>
     </div>
   </div>
   <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
@@ -712,6 +715,19 @@ window.resetCollection=function(){
   col={};scheduleSave();updateHeader();renderAlbum();showToast("Coleção resetada","error");
 };
 
+window.refreshApp=function(){
+  showToast("Atualizando app...","success");
+  setTimeout(()=>{
+    if('caches'in navigator){
+      caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k)))).then(()=>{
+        location.reload(true);
+      });
+    }else{
+      location.reload(true);
+    }
+  },300);
+};
+
 // ── VOZ ──────────────────────────────────────
 function parseCommand(text){
   const n=norm(text);
@@ -979,40 +995,48 @@ window.runScan = async function() {
   document.getElementById("scan-fallback-section").style.display = "none";
   try {
     const teamList = TODOS.map(s => s.cod + "=" + s.nome).join(", ");
-    const prompt = `VOCÊ É UM ESPECIALISTA EM ANÁLISE DE ÁLBUNS PANINI COPA 2026.
+    const prompt = `VOCÊ É UM ESPECIALISTA EM LEITURA DE ÁLBUNS PANINI COPA 2026.
 
-📋 TAREFA: Analise esta página do álbum e identifique:
-1) A SELEÇÃO (país)
-2) QUAIS FIGURINHAS ESTÃO COLADAS (preenchidas)
+📋 TAREFA EXATA:
+1) Identifique a SELEÇÃO (país/bandeira)
+2) Leia CADA NÚMERO de slot (sequência 1,2,3,4...20)
+3) Para cada número: identifique se tem FOTO COLADA ou está VAZIO
+4) Retorne JSON com todos os números que têm fotos
 
-🏳️ CÓDIGOS DE SELEÇÃO (use EXATAMENTE esses 3 letras):
+🏳️ CÓDIGOS EXATOS (3 letras):
 ${teamList}
 
-👁️ COMO IDENTIFICAR FIGURINHAS:
-- PREENCHIDA: Tem UMA FOTO DE JOGADOR colorida, nome, número do jogador, uniforme. Parece "completa" e "real"
-- VAZIA: Mostra APENAS ESPAÇO EM BRANCO OU CINZA PURO, sem foto, sem rosto, sem cores. É um "slot vazio"
-- DICA: Uma figurinha preenchida é MUITO visível - tem cores, foto de pessoa. Uma vazia é MONÓTONA
+🔢 ENTENDENDO OS NÚMEROS:
+- CADA SLOT TEM UM NÚMERO IMPRESSO (sempre presente, mesmo se vazio)
+- Os números são SEQUENCIAIS: 1, 2, 3, 4, 5, ... até 20 (ou mais se múltiplas páginas)
+- O número aparece EMBAIXO do slot, ou num CANTO (pequeno ou grande, depende)
+- VOCÊ PRECISA LER TODOS os números sequencialmente de esquerda-direita, linha por linha
+- Se há 2 páginas: página 1 tem números 1-20, página 2 tem 21-40, etc.
 
-📍 ESTRUTURA DO ÁLBUM:
-- As figurinhas estão organizadas em GRADE (linhas e colunas)
-- CADA SLOT TEM UM NÚMERO único (1, 2, 3, ... até 20 ou mais)
-- O NÚMERO FICA EMBAIXO OU NO CANTO do slot
-- Leia os números CUIDADOSAMENTE - não confunda 6 com 8, 9 com 3, etc
+📍 DIFERENÇA VISUAL CRÍTICA:
+- COM FOTO = slot colorido com rosto de jogador, nome, cores vibrantes, uniforme visível
+- SEM FOTO (VAZIO) = slot tem NÚMERO VISÍVEL mas resto é branco/cinza vazio, sem foto, sem cores
 
-⚠️ ERROS COMUNS A EVITAR:
-- NÃO confunda "área branca do fundo" com "slot vazio"
-- NÃO leia números errados (olhe CADA SLOT individualmente)
-- NÃO conte slots que têm só escudo/logo sem foto do jogador
-- SIM conte slots com foto de jogador mesmo que parcialmente visível
+✅ PROCESSO EXATO:
+1) No topo/lado da página: procure nome do país ou bandeira → encontre código na lista
+2) Olhe LINHA POR LINHA, SLOT POR SLOT
+3) Para cada slot numerado:
+   - Leia o NÚMERO (1? 2? 3? ...)
+   - Pergunta: "Este número TEM UMA FOTO COM CORES ou está VAZIO?"
+   - SIM FOTO = adicione ao "filled"
+   - NÃO FOTO = não adicione
+4) Se há múltiplas páginas, processe AMBAS as páginas
 
-🔄 PROCESSO:
-1) Identifique o NOME/BANDEIRA do país no topo
-2) Procure o CÓDIGO exato na lista (3 letras)
-3) Para CADA NÚMERO de slot, pergunte: "Vejo uma FOTO com cores?" SIM=PREENCHIDA, NÃO=VAZIA
-4) Retorne APENAS JSON válido
+⚠️ LEMBRE-SE:
+- O NÚMERO está SEMPRE lá, mesmo que vazio (você verá o número e depois espaço branco)
+- Não confunda "espaço em branco" com "não existe" - existe o slot, só não tem foto
+- Números podem ser pequenos ou grandes - leia com atenção
+- Se vê um número, o slot EXISTE - então retorne esse número no JSON
+- Se tem foto colorida nesse número, adicione ao "filled"
+- Se é só número sem foto (branco), NÃO adicione ao "filled"
 
-📤 RETORNE APENAS ESTE JSON (nada mais):
-{"team_cod":"XXX","filled":[números dos slots preenchidos],"analysis":"resumo do que viu"}`;
+📤 RETORNE APENAS ESTE JSON:
+{"team_cod":"XXX","filled":[1,3,5,7],"all_numbers":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"analysis":"Identifiquei [país]. Página mostra slots 1-20. Slots com foto: 1,3,5,7. Slots vazios: 2,4,6,8...20"}`;
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + scanApiKey },
@@ -1034,6 +1058,7 @@ ${teamList}
     const parsed = JSON.parse(jsonMatch[0]);
     scanRawFilled = (parsed.filled || []).map(Number);
     if (parsed.analysis) console.log("Análise da IA:", parsed.analysis);
+    if (parsed.all_numbers) console.log("Sequência de números detectados:", parsed.all_numbers.join(", "));
     const sel = TODOS.find(s => s.cod === parsed.team_cod);
     if (sel) {
       showScanResult(sel);
