@@ -802,8 +802,13 @@ function startVoice(){
   };
   recognition.onerror=e=>{
     stopVoice();
-    if(e.error==="not-allowed")showToast("⚠️ Permita o microfone nas configurações","error");
-    else if(e.error==="no-speech")showToast("Não ouvi nada. Tente de novo.","warning");
+    console.error("Speech Recognition error:",e.error);
+    if(e.error==="not-allowed"){
+      showToast("⚠️ Permita o microfone nas configurações do navegador","error");
+      console.log("Dica: Limpe as permissões do site e tente novamente");
+    }else if(e.error==="no-speech")showToast("Não ouvi nada. Tente de novo.","warning");
+    else if(e.error==="network")showToast("⚠️ Erro de conexão","error");
+    else showToast(`⚠️ Erro: ${e.error}`,"error");
   };
   recognition.onend=()=>stopVoice();
   try{recognition.start();}catch{}
