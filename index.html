@@ -207,8 +207,26 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 100%);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:rgba(15,35,71,.95);border:1px solid rgba(200,168,75,.2);border-radius:20px;padding:40px;max-width:380px;width:100%;text-align:center">
+    <div style="font-size:60px;margin-bottom:20px">⚽</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);letter-spacing:2px;margin-bottom:10px">Copa 2026</div>
+    <div style="color:rgba(255,255,255,.5);margin-bottom:30px;font-size:13px">Controle de Figurinhas Panini</div>
+
+    <div style="margin-bottom:20px">
+      <label style="display:block;text-align:left;color:rgba(255,255,255,.6);font-size:12px;margin-bottom:8px;letter-spacing:1px;text-transform:uppercase">Seu Nome ou Email</label>
+      <input id="login-input" type="text" placeholder="Ex: William ou william@email.com" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:12px 14px;color:#fff;font-size:14px;font-family:'Barlow',sans-serif">
+    </div>
+
+    <button onclick="loginUser()" style="width:100%;background:var(--gold);border:none;border-radius:10px;padding:14px;color:#000;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;cursor:pointer;font-weight:700;margin-bottom:10px">ENTRAR</button>
+
+    <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:20px">Cada pessoa tem seu próprio álbum</div>
+  </div>
+</div>
+
 <!-- LOADING -->
-<div id="loading">
+<div id="loading" style="display:none">
   <div class="logo">⚽</div>
   <div class="txt">Copa 2026</div>
   <div class="loader"></div>
@@ -228,6 +246,7 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
     </div>
     <div style="display:flex;align-items:center;gap:12px">
       <button onclick="refreshApp()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:4px;border-radius:8px;transition:all .2s" title="Atualizar aplicativo">🔄</button>
+      <button onclick="logoutUser()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);transition:all .2s" title="Fazer logout">Sair</button>
       <div>
         <div class="pct-num" id="pct-num">0%</div>
         <div class="pct-sub" id="pct-sub">0 de 980</div>
@@ -352,8 +371,15 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const DOC_ID = "colecao_william"; // ID único da sua coleção
-const docRef = doc(db, "figurinhas", DOC_ID);
+
+// User management
+let currentUser = null;
+let docRef = null;
+
+function getDocRef(){
+  if(!currentUser)return null;
+  return doc(db, "figurinhas", currentUser);
+}
 
 // ── DADOS ────────────────────────────────────
 const SELECOES = [
@@ -454,26 +480,52 @@ let voiceListening = false;
 let saveTimer = null;
 let ignoreSnapshot = false;
 
+// ── LOGIN ─────────────────────────────────────
+window.loginUser = function(){
+  const input = document.getElementById("login-input");
+  const name = input.value.trim().toLowerCase().replace(/\s+/g,"_").substring(0,50);
+  if(!name){showToast("Digite seu nome ou email","error");return;}
+  currentUser = name;
+  localStorage.setItem("copa2026_user", currentUser);
+  document.getElementById("login-screen").style.display = "none";
+  loadFromFirebase();
+};
+
+window.logoutUser = function(){
+  if(!confirm("Sair e voltar ao login?"))return;
+  localStorage.removeItem("copa2026_col");
+  currentUser = null;
+  col = {};
+  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("header").style.display = "none";
+  document.getElementById("content").style.display = "none";
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("login-input").value = "";
+  document.getElementById("login-input").focus();
+};
+
 // ── FIREBASE: CARREGAR ───────────────────────
 async function loadFromFirebase() {
+  if(!currentUser){return;}
   setSyncStatus("syncing", "Conectando...");
+  const userDocRef = getDocRef();
   try {
     // Carrega local primeiro para ser rápido
     try { const s = localStorage.getItem("copa2026_col"); if(s) col = JSON.parse(s); } catch{}
 
-    const snap = await getDoc(docRef);
+    const snap = await getDoc(userDocRef);
     if (snap.exists()) {
       col = snap.data().col || {};
       localStorage.setItem("copa2026_col", JSON.stringify(col));
     } else {
       // Primeiro acesso: salva o que tem local
-      await setDoc(docRef, { col });
+      await setDoc(userDocRef, { col });
     }
     setSyncStatus("ok", "Sincronizado ✓");
     showApp();
 
     // Listener em tempo real para outros dispositivos
-    onSnapshot(docRef, (snap) => {
+    onSnapshot(userDocRef, (snap) => {
       if (ignoreSnapshot) { ignoreSnapshot = false; return; }
       if (snap.exists()) {
         col = snap.data().col || {};
@@ -499,11 +551,13 @@ async function loadFromFirebase() {
 function scheduleSave() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
+    if(!currentUser)return;
+    const userDocRef = getDocRef();
     localStorage.setItem("copa2026_col", JSON.stringify(col));
     setSyncStatus("syncing", "Salvando...");
     try {
       ignoreSnapshot = true;
-      await setDoc(docRef, { col });
+      await setDoc(userDocRef, { col });
       setSyncStatus("ok", "Sincronizado ✓");
       setTimeout(()=> setSyncStatus("ok","☁️ Na nuvem"), 1500);
     } catch(e) {
@@ -1096,7 +1150,16 @@ window.confirmScan = function() {
 };
 
 // ── INIT ─────────────────────────────────────
-loadFromFirebase();
+document.getElementById("loading").style.display = "none";
+const savedUser = localStorage.getItem("copa2026_user");
+if(savedUser){
+  currentUser = savedUser;
+  document.getElementById("login-screen").style.display = "none";
+  loadFromFirebase();
+}else{
+  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("login-input").focus();
+}
 
 // Fallback para emojis de bandeira que não renderizam no desktop
 setTimeout(() => {
