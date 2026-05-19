@@ -275,7 +275,7 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
   <div id="tab-stats" style="display:none">
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-val" id="s-tenho" style="color:#2ecc71">0</div><div class="stat-lbl">Tenho</div></div>
-      <div class="stat-card"><div class="stat-icon">❌</div><div class="stat-val" id="s-falta" style="color:#e74c3c">980</div><div class="stat-lbl">Falta</div></div>
+      <div class="stat-card"><div class="stat-icon">❌</div><div class="stat-val" id="s-falta" style="color:#e74c3c">994</div><div class="stat-lbl">Falta</div></div>
       <div class="stat-card"><div class="stat-icon">🔁</div><div class="stat-val" id="s-rep" style="color:#c8a84b">0</div><div class="stat-lbl">Repetidas</div></div>
     </div>
     <div class="sel-progress-list">
@@ -407,9 +407,8 @@ const SELECOES = [
   {cod:"PAN",nome:"Panamá (PAN)",grupo:"L",total:20,flag:"🇵🇦"},
 ];
 const ESPECIAIS = [
-  {cod:"FWC",nome:"Copa / Mascote / Bola",grupo:"ESPECIAIS",total:4,flag:"🏆"},
-  {cod:"EST",nome:"Estádios",grupo:"ESPECIAIS",total:16,flag:"🏟️"},
-  {cod:"ESC",nome:"Escudos Especiais",grupo:"ESPECIAIS",total:48,flag:"🛡️"},
+  {cod:"FWC",nome:"FIFA World Cup (FWC)",grupo:"ESPECIAIS",total:20,flag:"🏆"},
+  {cod:"CCL",nome:"Coca-Cola (CCL)",grupo:"ESPECIAIS",total:14,flag:"🥤"},
 ];
 const TODOS = [...SELECOES,...ESPECIAIS];
 const TOTAL_GERAL = TODOS.reduce((a,s)=>a+s.total,0);
@@ -440,7 +439,8 @@ const ALIASES = {
   "nova zelandia":"NZL","nova zelândia":"NZL",
   "gana":"GHA",
   "arábia saudita":"KSA",
-  "copa":"FWC","estadios":"EST","escudos":"ESC"
+  "fifa":"FWC","fifa world cup":"FWC","world cup":"FWC","copa":"FWC","campeonato":"FWC",
+  "coca":"CCL","coca-cola":"CCL","cocacola":"CCL"
 };
 
 // ── ESTADO ───────────────────────────────────
