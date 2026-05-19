@@ -979,7 +979,40 @@ window.runScan = async function() {
   document.getElementById("scan-fallback-section").style.display = "none";
   try {
     const teamList = TODOS.map(s => s.cod + "=" + s.nome).join(", ");
-    const prompt = `Esta é uma página do álbum de figurinhas Panini Copa 2026. Analise com cuidado:\n\n1) Identifique a seleção pelo nome/bandeira visível na página. Se estiver na lista, use o código exato: ${teamList}. Se não estiver, invente um código de 3 letras baseado no nome.\n\n2) Para cada slot numerado: um slot PREENCHIDO tem foto de jogador com cores e imagem real. Um slot VAZIO mostra apenas o contorno/moldura em branco ou cinza sem foto. Leia os números diretamente impressos nos slots.\n\nRetorne APENAS JSON: {"team_cod":"BRA","filled":[1,3,5],"empty":[2,4,6]}`;
+    const prompt = `VOCÊ É UM ESPECIALISTA EM ANÁLISE DE ÁLBUNS PANINI COPA 2026.
+
+📋 TAREFA: Analise esta página do álbum e identifique:
+1) A SELEÇÃO (país)
+2) QUAIS FIGURINHAS ESTÃO COLADAS (preenchidas)
+
+🏳️ CÓDIGOS DE SELEÇÃO (use EXATAMENTE esses 3 letras):
+${teamList}
+
+👁️ COMO IDENTIFICAR FIGURINHAS:
+- PREENCHIDA: Tem UMA FOTO DE JOGADOR colorida, nome, número do jogador, uniforme. Parece "completa" e "real"
+- VAZIA: Mostra APENAS ESPAÇO EM BRANCO OU CINZA PURO, sem foto, sem rosto, sem cores. É um "slot vazio"
+- DICA: Uma figurinha preenchida é MUITO visível - tem cores, foto de pessoa. Uma vazia é MONÓTONA
+
+📍 ESTRUTURA DO ÁLBUM:
+- As figurinhas estão organizadas em GRADE (linhas e colunas)
+- CADA SLOT TEM UM NÚMERO único (1, 2, 3, ... até 20 ou mais)
+- O NÚMERO FICA EMBAIXO OU NO CANTO do slot
+- Leia os números CUIDADOSAMENTE - não confunda 6 com 8, 9 com 3, etc
+
+⚠️ ERROS COMUNS A EVITAR:
+- NÃO confunda "área branca do fundo" com "slot vazio"
+- NÃO leia números errados (olhe CADA SLOT individualmente)
+- NÃO conte slots que têm só escudo/logo sem foto do jogador
+- SIM conte slots com foto de jogador mesmo que parcialmente visível
+
+🔄 PROCESSO:
+1) Identifique o NOME/BANDEIRA do país no topo
+2) Procure o CÓDIGO exato na lista (3 letras)
+3) Para CADA NÚMERO de slot, pergunte: "Vejo uma FOTO com cores?" SIM=PREENCHIDA, NÃO=VAZIA
+4) Retorne APENAS JSON válido
+
+📤 RETORNE APENAS ESTE JSON (nada mais):
+{"team_cod":"XXX","filled":[números dos slots preenchidos],"analysis":"resumo do que viu"}`;
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + scanApiKey },
@@ -995,10 +1028,12 @@ window.runScan = async function() {
     if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error?.message || "Erro " + res.status); }
     const data = await res.json();
     const content = data.choices[0].message.content;
+    console.log("IA Response:", content);
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Resposta inesperada da IA");
     const parsed = JSON.parse(jsonMatch[0]);
     scanRawFilled = (parsed.filled || []).map(Number);
+    if (parsed.analysis) console.log("Análise da IA:", parsed.analysis);
     const sel = TODOS.find(s => s.cod === parsed.team_cod);
     if (sel) {
       showScanResult(sel);
