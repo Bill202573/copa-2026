@@ -571,7 +571,7 @@ function selStats(sel){
     const s=getStatus(sel.cod,i);
     if(s==="tenho")tenho++;else if(s==="repetida")repetida++;
   }
-  return{tenho,repetida,falta:sel.total-tenho-repetida,pct:Math.round((tenho/sel.total)*100)};
+  return{tenho,repetida,falta:sel.total-tenho,pct:Math.round((tenho/sel.total)*100)};
 }
 
 function updateHeader(){
@@ -622,7 +622,7 @@ window.renderAlbum=function(){
       <div class="sel-row${isOpen?" open":""}" data-cod="${sel.cod}" onclick="toggleSel('${sel.cod}')">
         <div class="sel-header">
           <div class="sel-left">
-            <span class="sel-flag">${sel.flag}</span>
+            <span class="sel-flag" title="${sel.cod}">${sel.flag}<span style="display:none">${sel.cod}</span></span>
             <div>
               <div class="sel-name">${sel.nome} <span style="color:rgba(255,255,255,.28);font-size:11px">(${sel.cod})</span></div>
               <div class="sel-info">G-${sel.grupo} · ${ss.tenho} tenho · ${ss.repetida} rep · ${ss.falta} falta</div>
@@ -1097,6 +1097,17 @@ window.confirmScan = function() {
 
 // ── INIT ─────────────────────────────────────
 loadFromFirebase();
+
+// Fallback para emojis de bandeira que não renderizam no desktop
+setTimeout(() => {
+  document.querySelectorAll(".sel-flag").forEach(el => {
+    const text = el.textContent;
+    const hidden = el.querySelector("span[style*='display:none']");
+    if (hidden && text === hidden.textContent) {
+      el.textContent = hidden.textContent;
+    }
+  });
+}, 500);
 </script>
 </body>
 </html>
