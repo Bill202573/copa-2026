@@ -562,7 +562,7 @@ function calcStats(){
     if(col[k]==="tenho")tenho++;
     else if(col[k]==="repetida")repetida++;
   }
-  return{tenho,repetida,falta:TOTAL_GERAL-tenho-repetida,total:TOTAL_GERAL};
+  return{tenho,repetida,falta:TOTAL_GERAL-tenho,total:TOTAL_GERAL};
 }
 
 function selStats(sel){
