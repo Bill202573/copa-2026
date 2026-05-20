@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copa 2026 - Recuperador de Dados</title>
+<style>
+body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(160deg, #060f24 0%, #0f2347 60%, #061830 100%);
+  color: #fff;
+  padding: 20px;
+  margin: 0;
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+h1 { color: #f0d060; margin-bottom: 20px; }
+.section {
+  background: rgba(15, 35, 71, 0.8);
+  border: 1px solid rgba(200, 168, 75, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.section h2 {
+  color: #c8a84b;
+  margin-top: 0;
+}
+textarea {
+  width: 100%;
+  height: 200px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(200, 168, 75, 0.5);
+  color: #fff;
+  border-radius: 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+button {
+  background: #c8a84b;
+  border: none;
+  color: #000;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 5px 5px 5px 0;
+  transition: background 0.3s;
+}
+button:hover { background: #f0d060; }
+.info {
+  background: rgba(46, 204, 113, 0.1);
+  border: 1px solid #27ae60;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+}
+.warning {
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid #e74c3c;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 600px) {
+  .grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>⚽ Copa 2026 - Recuperador de Dados</h1>
+
+<div class="section">
+  <h2>1️⃣ Verificar Dados Atuais</h2>
+  <p>Clique para ver seus dados atuais salvos:</p>
+  <button onclick="showCurrentData()">🔍 Ver Dados no Navegador</button>
+  <textarea id="currentData" readonly placeholder="Seus dados aparecerão aqui..."></textarea>
+  <div class="info">
+    <strong>Informação:</strong> Isso mostra o que está salvo no armazenamento local do seu navegador.
+  </div>
+</div>
+
+<div class="section">
+  <h2>2️⃣ Exportar Dados Atuais</h2>
+  <p>Faça um backup dos seus dados atuais antes de fazer alterações:</p>
+  <button onclick="exportCurrentData()">💾 Exportar Como JSON</button>
+  <div class="info">
+    Um arquivo será baixado com seus dados atuais.
+  </div>
+</div>
+
+<div class="section">
+  <h2>3️⃣ Restaurar de Arquivo</h2>
+  <p>Se você tem um backup anterior, pode restaurar daqui:</p>
+  <input type="file" id="fileInput" accept=".json" />
+  <button onclick="loadFromFile()">📂 Carregar Arquivo</button>
+  <textarea id="importData" placeholder="Ou cole aqui um JSON exportado..."></textarea>
+  <button onclick="restoreData()">✅ Restaurar Dados</button>
+  <div class="warning">
+    <strong>Atenção:</strong> Isso substituirá seus dados atuais!
+  </div>
+</div>
+
+<div class="section">
+  <h2>4️⃣ Criar Dados Corrigidos Manualmente</h2>
+  <p>Se quer adicionar dados específicos (ex: Croácia 16/20):</p>
+  <div class="grid">
+    <div>
+      <label>País (código, ex: CRO):</label>
+      <input type="text" id="countryCode" placeholder="CRO" />
+    </div>
+    <div>
+      <label>Números a marcar como "tenho" (separados por vírgula):</label>
+      <input type="text" id="tenhoNumbers" placeholder="ex: 1,2,3,4" />
+    </div>
+  </div>
+  <button onclick="addCountryData()">➕ Adicionar País</button>
+  <textarea id="manualData" placeholder="Dados serão construídos aqui..."></textarea>
+  <button onclick="importManualData()">✅ Importar Dados Construídos</button>
+</div>
+
+<div class="section">
+  <h2>ℹ️ Informações Úteis</h2>
+  <ul>
+    <li><strong>Usuário atual:</strong> <span id="currentUser">Não logado</span></li>
+    <li><strong>Total de figurinhas marcadas:</strong> <span id="totalMarked">0</span></li>
+    <li>Para usar os dados importados, abra o app e recarregue a página</li>
+    <li>Se estiver offline, os dados serão salvos localmente no navegador</li>
+  </ul>
+</div>
+
+</div>
+
+<script>
+// Mostrar dados atuais
+function showCurrentData() {
+  const col = localStorage.getItem("copa2026_col");
+  const user = localStorage.getItem("copa2026_user");
+
+  document.getElementById("currentUser").textContent = user || "Não logado";
+
+  if (col) {
+    try {
+      const data = JSON.parse(col);
+      document.getElementById("currentData").value = JSON.stringify(data, null, 2);
+
+      const count = Object.keys(data).length;
+      document.getElementById("totalMarked").textContent = count;
+    } catch(e) {
+      document.getElementById("currentData").value = "❌ Erro ao ler dados: " + e.message;
+    }
+  } else {
+    document.getElementById("currentData").value = "⚠️ Nenhum dado encontrado! (localStorage vazio)";
+    document.getElementById("totalMarked").textContent = "0";
+  }
+}
+
+// Exportar dados atuais
+function exportCurrentData() {
+  const col = localStorage.getItem("copa2026_col");
+  const user = localStorage.getItem("copa2026_user") || "usuario";
+
+  if (!col) {
+    alert("❌ Nenhum dado para exportar!");
+    return;
+  }
+
+  const data = {
+    user: user,
+    exported: new Date().toISOString(),
+    col: JSON.parse(col)
+  };
+
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Copa2026_${user}_${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Carregar arquivo
+function loadFromFile() {
+  const file = document.getElementById("fileInput").files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById("importData").value = e.target.result;
+  };
+  reader.readAsText(file);
+}
+
+// Restaurar dados do textarea
+function restoreData() {
+  const jsonText = document.getElementById("importData").value;
+  if (!jsonText.trim()) {
+    alert("Cole um JSON válido!");
+    return;
+  }
+
+  try {
+    const data = JSON.parse(jsonText);
+    const col = data.col || data;
+    localStorage.setItem("copa2026_col", JSON.stringify(col));
+    alert("✅ Dados restaurados com sucesso! Recarregue o app para ver as mudanças.");
+    showCurrentData();
+  } catch(e) {
+    alert("❌ JSON inválido: " + e.message);
+  }
+}
+
+// Adicionar dados de um país
+function addCountryData() {
+  const code = document.getElementById("countryCode").value.toUpperCase().trim();
+  const tenhoStr = document.getElementById("tenhoNumbers").value.trim();
+
+  if (!code || !tenhoStr) {
+    alert("Preencha código e números!");
+    return;
+  }
+
+  const col = JSON.parse(localStorage.getItem("copa2026_col") || "{}");
+  const números = tenhoStr.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+
+  números.forEach(num => {
+    col[code + "_" + num] = "tenho";
+  });
+
+  document.getElementById("manualData").value = JSON.stringify(col, null, 2);
+  document.getElementById("countryCode").value = "";
+  document.getElementById("tenhoNumbers").value = "";
+  alert(`✅ Adicionado: ${code} com ${números.length} figurinhas`);
+}
+
+// Importar dados construídos manualmente
+function importManualData() {
+  const jsonText = document.getElementById("manualData").value;
+  if (!jsonText.trim()) {
+    alert("Construa dados primeiro!");
+    return;
+  }
+
+  try {
+    const col = JSON.parse(jsonText);
+    localStorage.setItem("copa2026_col", JSON.stringify(col));
+    alert("✅ Dados importados! Recarregue o app para ver as mudanças.");
+    showCurrentData();
+  } catch(e) {
+    alert("❌ JSON inválido: " + e.message);
+  }
+}
+
+// Mostrar dados ao carregar a página
+window.addEventListener("load", showCurrentData);
+</script>
+
+</body>
+</html>
