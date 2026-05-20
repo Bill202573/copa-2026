@@ -402,7 +402,7 @@ const SELECOES = [
   {cod:"HAI",nome:"Haiti (HAI)",grupo:"C",total:20,flag:"🇭🇹"},
   {cod:"SCO",nome:"Escócia (SCO)",grupo:"C",total:20,flag:"🏴󠁧󠁢󠁳󠁣󠁴󠁿"},
   {cod:"USA",nome:"Estados Unidos (USA)",grupo:"D",total:20,flag:"🇺🇸"},
-  {cod:"PRY",nome:"Paraguai (PRY)",grupo:"D",total:20,flag:"🇵🇾"},
+  {cod:"PAR",nome:"Paraguai (PAR)",grupo:"D",total:20,flag:"🇵🇾"},
   {cod:"AUS",nome:"Austrália (AUS)",grupo:"D",total:20,flag:"🇦🇺"},
   {cod:"TUR",nome:"Turquia (TUR)",grupo:"D",total:20,flag:"🇹🇷"},
   {cod:"GER",nome:"Alemanha (GER)",grupo:"E",total:20,flag:"🇩🇪"},
@@ -458,7 +458,7 @@ const ALIASES = {
   "costa do marfim":"CIV","haiti":"HAI",
   "africa do sul":"RSA","south africa":"RSA",
   "tchequia":"CZE","republica tcheca":"CZE",
-  "paraguai":"PRY",
+  "paraguai":"PAR",
   "bosnia":"BIH","bósnia":"BIH","herzegovina":"BIH","bosnia-herzegovina":"BIH",
   "suecia":"SWE","suécia":"SWE",
   "iraque":"IRQ","iraq":"IRQ",
@@ -759,7 +759,7 @@ window.goToSel=function(cod){
 // ── STATS ────────────────────────────────────
 function renderStats(){
   const s=calcStats();
-  document.getElementById("s-tenho").textContent=s.tenho;
+  document.getElementById("s-tenho").textContent=s.coladas;
   document.getElementById("s-falta").textContent=s.falta;
   document.getElementById("s-rep").textContent=s.repetida;
   const sorted=[...SELECOES].sort((a,b)=>selStats(b).pct-selStats(a).pct);
