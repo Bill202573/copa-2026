@@ -621,7 +621,8 @@ function calcStats(){
     if(col[k]==="tenho")tenho++;
     else if(col[k]==="repetida")repetida++;
   }
-  return{tenho,repetida,falta:TOTAL_GERAL-tenho,total:TOTAL_GERAL};
+  const coladas=tenho+repetida;
+  return{tenho,repetida,coladas,falta:TOTAL_GERAL-coladas,total:TOTAL_GERAL};
 }
 
 function selStats(sel){
@@ -630,16 +631,17 @@ function selStats(sel){
     const s=getStatus(sel.cod,i);
     if(s==="tenho")tenho++;else if(s==="repetida")repetida++;
   }
-  return{tenho,repetida,falta:sel.total-tenho,pct:Math.round((tenho/sel.total)*100)};
+  const coladas=tenho+repetida;
+  return{tenho,repetida,coladas,falta:sel.total-coladas,pct:Math.round((coladas/sel.total)*100)};
 }
 
 function updateHeader(){
   const s=calcStats();
-  const pct=Math.round((s.tenho/s.total)*100);
+  const pct=s.coladas?Math.round((s.coladas/s.total)*100):0;
   const el=document.getElementById("pct-num");
   el.textContent=pct+"%";
   el.className="pct-num"+(pct===100?" done":"");
-  document.getElementById("pct-sub").textContent=s.tenho+" de "+s.total;
+  document.getElementById("pct-sub").textContent=s.coladas+" de "+s.total;
   const fill=document.getElementById("progress-fill");
   fill.style.width=pct+"%";
   fill.className="progress-fill"+(pct===100?" done":"");
@@ -651,7 +653,7 @@ function updateSelRow(cod){
   const q=(cls)=>document.querySelector(`.sel-row[data-cod="${cod}"] .${cls}`);
   const pctEl=q("sel-pct"),countEl=q("sel-count"),infoEl=q("sel-info"),fillEl=q("sel-bar-fill");
   if(pctEl){pctEl.textContent=ss.pct+"%";pctEl.className="sel-pct"+(ss.pct===100?" done":"");}
-  if(countEl)countEl.textContent=ss.tenho+"/"+sel.total;
+  if(countEl)countEl.textContent=ss.coladas+"/"+sel.total;
   if(infoEl)infoEl.textContent=`G-${sel.grupo} · ${ss.tenho} tenho · ${ss.repetida} rep · ${ss.falta} falta`;
   if(fillEl){fillEl.style.width=ss.pct+"%";fillEl.className="sel-bar-fill"+(ss.pct===100?" done":"");}
   updateHeader();
