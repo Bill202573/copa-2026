@@ -301,6 +301,11 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
       <div class="sel-progress-title">🏆 Progresso por Seleção</div>
       <div id="stats-list"></div>
     </div>
+    <button class="reset-btn" onclick="exportData()" style="background:rgba(46,204,113,.1);border:1px solid #27ae60;color:#2ecc71;margin-bottom:10px">💾 EXPORTAR DADOS</button>
+    <label class="reset-btn" style="background:rgba(100,150,255,.1);border:1px solid #6496ff;color:#64a8ff;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px">
+      📥 IMPORTAR DADOS
+      <input type="file" accept=".json" onchange="importData(this)" style="display:none">
+    </label>
     <button class="reset-btn" onclick="resetCollection()">🗑️ RESETAR TODA A COLEÇÃO</button>
   </div>
 </div>
@@ -763,6 +768,41 @@ function renderStats(){
     </div>`;
   }).join("");
 }
+
+window.exportData=function(){
+  const data={user:currentUser,exported:new Date().toISOString(),col:col};
+  const json=JSON.stringify(data,null,2);
+  const blob=new Blob([json],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=`Copa2026_${currentUser}_${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("✅ Dados exportados!","success");
+};
+
+window.importData=function(input){
+  if(!input.files[0]){return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      col=data.col||{};
+      localStorage.setItem("copa2026_col",JSON.stringify(col));
+      scheduleSave();
+      updateHeader();
+      renderAlbum();
+      showToast("✅ Dados importados com sucesso!","success");
+    }catch(err){
+      showToast("❌ Arquivo inválido!","error");
+    }
+  };
+  reader.readAsText(input.files[0]);
+  input.value="";
+};
 
 window.resetCollection=function(){
   if(!confirm("Apagar todo o progresso? Esta ação não pode ser desfeita."))return;
