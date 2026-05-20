@@ -692,7 +692,7 @@ window.renderAlbum=function(){
           </div>
           <div>
             <div class="sel-pct${ss.pct===100?" done":""}">${ss.pct}%</div>
-            <div class="sel-count">${ss.tenho}/${sel.total}</div>
+            <div class="sel-count">${ss.coladas}/${sel.total}</div>
           </div>
         </div>
         <div class="sel-bar"><div class="sel-bar-fill${ss.pct===100?" done":""}" style="width:${ss.pct}%"></div></div>
@@ -766,7 +766,7 @@ function renderStats(){
   document.getElementById("stats-list").innerHTML=sorted.map(sel=>{
     const ss=selStats(sel);
     return`<div class="sel-prog-row">
-      <div class="sel-prog-header"><span>${sel.flag} ${sel.nome}</span><span style="color:${ss.pct===100?"#2ecc71":"#c8a84b"}">${ss.tenho}/${sel.total}</span></div>
+      <div class="sel-prog-header"><span>${sel.flag} ${sel.nome}</span><span style="color:${ss.pct===100?"#2ecc71":"#c8a84b"}">${ss.coladas}/${sel.total}</span></div>
       <div class="sel-prog-bar"><div class="sel-prog-fill" style="width:${ss.pct}%;background:${ss.pct===100?"#2ecc71":"linear-gradient(90deg,#c8a84b,#f0d060)"}"></div></div>
     </div>`;
   }).join("");
