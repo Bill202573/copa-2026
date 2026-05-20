@@ -674,8 +674,11 @@ window.renderAlbum=function(){
   const q=norm(document.getElementById("filter-input").value);
   const list=TODOS.filter(sel=>{
     if(activeGrupo!=="TODAS"&&sel.grupo!==activeGrupo)return false;
-    if(q)return norm(sel.nome).includes(q)||norm(sel.cod).includes(q);
-    return true;
+    if(!q)return true;
+    // Para siglas de 3 letras, procura por match exato
+    if(q.length===3)return sel.cod===q.toUpperCase();
+    // Caso contrário, procura por substring no nome ou sigla
+    return norm(sel.nome).includes(q)||norm(sel.cod).includes(q);
   });
   document.getElementById("sel-list").innerHTML=list.map(sel=>{
     const ss=selStats(sel);
@@ -828,13 +831,31 @@ window.refreshApp=function(){
 // ── VOZ ──────────────────────────────────────
 function parseCommand(text){
   const n=norm(text);
-  const direct=n.match(/\b([a-z]{3})\s*(\d{1,2})\b/);
-  if(direct){const cod=direct[1].toUpperCase();if(TODOS.find(s=>s.cod===cod))return{cod,num:parseInt(direct[2])};}
   let foundCod=null;
-  const sorted=Object.entries(ALIASES).sort((a,b)=>b[0].length-a[0].length);
-  for(const[alias,cod]of sorted){if(!cod)continue;if(n.includes(norm(alias))){foundCod=cod;break;}}
+  let foundNum=null;
+
+  // Tenta match com 3 letras exatas (com ou sem número)
+  const threeLetters=n.match(/\b([a-z]{3})\b/);
+  if(threeLetters){
+    const cod=threeLetters[1].toUpperCase();
+    if(TODOS.find(s=>s.cod===cod))foundCod=cod;
+  }
+
+  // Se não encontrou por 3 letras exatas, tenta pelos aliases (match por palavra exata)
+  if(!foundCod){
+    const sorted=Object.entries(ALIASES).sort((a,b)=>b[0].length-a[0].length);
+    for(const[alias,cod]of sorted){
+      if(!cod)continue;
+      // Usa word boundary para evitar "us" dar match em "aus"
+      if(n.match(new RegExp(`\\b${norm(alias)}\\b`))){foundCod=cod;break;}
+    }
+  }
+
+  // Procura por número em qualquer lugar
   const numMatch=n.match(/\b(\d{1,2})\b/);
-  return{cod:foundCod,num:numMatch?parseInt(numMatch[1]):null};
+  foundNum=numMatch?parseInt(numMatch[1]):null;
+
+  return{cod:foundCod,num:foundNum};
 }
 
 function showVoiceResult(parsed,text){
