@@ -288,10 +288,32 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
 
 <div id="toast"></div>
 <div id="install-banner">
-  <div class="install-text">📲 Instale na sua <strong>tela inicial</strong> para usar offline!</div>
+  <div class="install-text" id="install-text-default">📲 Instale na sua <strong>tela inicial</strong> para usar offline!</div>
+  <div class="install-text" id="install-text-ios" style="display:none">📲 Toque <strong>Compartilhar</strong> → <strong>Adicionar à Tela Inicial</strong></div>
   <div class="install-btns">
     <button class="install-ok" id="install-ok-btn">INSTALAR</button>
     <button class="install-skip" onclick="dismissInstall()">Agora não</button>
+  </div>
+</div>
+
+<!-- TUTORIAL MODAL -->
+<div id="tutorial-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2001;display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:rgba(10,22,40,.98);border:1px solid rgba(200,168,75,.3);border-radius:20px;max-width:450px;width:100%;padding:30px">
+    <div style="text-align:center;margin-bottom:25px">
+      <div style="font-size:48px;margin-bottom:10px" id="tut-icon">⚽</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);letter-spacing:2px;margin-bottom:8px" id="tut-title">Copa 2026 - Tutorial</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5)" id="tut-step">Passo 1 de 4</div>
+    </div>
+
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:15px;margin-bottom:20px;min-height:80px">
+      <div style="font-size:14px;line-height:1.6" id="tut-content"></div>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button id="tut-prev" onclick="tutorialPrev()" style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px;border-radius:8px;cursor:pointer;font-family:'Bebas Neue',sans-serif">← VOLTAR</button>
+      <button id="tut-next" onclick="tutorialNext()" style="flex:1;background:var(--gold);border:none;color:#000;padding:10px;border-radius:8px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-weight:bold">PRÓXIMO →</button>
+      <button onclick="closeTutorial()" style="flex:1;background:rgba(46,204,113,.1);border:1px solid #27ae60;color:#2ecc71;padding:10px;border-radius:8px;cursor:pointer;font-family:'Bebas Neue',sans-serif">PULAR</button>
+    </div>
   </div>
 </div>
 
@@ -923,6 +945,70 @@ window.dismissInstall=function(){
   localStorage.setItem("installDismissed","1");
 };
 
+// Detectar iOS
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+if(isIOS){
+  document.getElementById("install-text-default").style.display = "none";
+  document.getElementById("install-text-ios").style.display = "block";
+}
+
+// ── TUTORIAL ─────────────────────────────────
+const tutorialSteps = [
+  {icon:"✅",title:"Marcando Figurinhas",content:"Toque em uma figurinha para alternar entre:<br><strong>✅ Tenho</strong> (colada) | <strong>🔁 Repetida</strong> (cópia extra) | <strong>❌ Falta</strong> (removida)"},
+  {icon:"🔍",title:"Buscando Países",content:"Use o filtro para buscar por:<br><strong>Nome:</strong> Brasil, Alemanha, etc.<br><strong>Sigla:</strong> BRA, GER, AUS (3 letras)"},
+  {icon:"📊",title:"Vendo Estatísticas",content:"No tab <strong>Info</strong> veja:<br>• Total de figurinhas que tem<br>• Quantas faltam<br>• Progresso por país"},
+  {icon:"💾",title:"Salvando seus Dados",content:"Seus dados salvam automaticamente!<br>No tab <strong>Info</strong>:<br>• <strong>EXPORTAR</strong> para fazer backup<br>• <strong>IMPORTAR</strong> para restaurar"}
+];
+let tutorialCurrentStep = 0;
+
+function showTutorial(){
+  tutorialCurrentStep = 0;
+  document.getElementById("tutorial-modal").style.display = "flex";
+  updateTutorialDisplay();
+}
+
+function closeTutorial(){
+  document.getElementById("tutorial-modal").style.display = "none";
+  localStorage.setItem("tutorialViewed","1");
+}
+
+function updateTutorialDisplay(){
+  const step = tutorialSteps[tutorialCurrentStep];
+  document.getElementById("tut-icon").textContent = step.icon;
+  document.getElementById("tut-title").textContent = step.title;
+  document.getElementById("tut-content").innerHTML = step.content;
+  document.getElementById("tut-step").textContent = `Passo ${tutorialCurrentStep+1} de ${tutorialSteps.length}`;
+
+  document.getElementById("tut-prev").style.opacity = tutorialCurrentStep === 0 ? ".3" : "1";
+  document.getElementById("tut-prev").disabled = tutorialCurrentStep === 0;
+
+  if(tutorialCurrentStep === tutorialSteps.length - 1){
+    document.getElementById("tut-next").textContent = "FINALIZAR ✓";
+    document.getElementById("tut-next").style.background = "var(--green)";
+    document.getElementById("tut-next").style.color = "#fff";
+  } else {
+    document.getElementById("tut-next").textContent = "PRÓXIMO →";
+    document.getElementById("tut-next").style.background = "var(--gold)";
+    document.getElementById("tut-next").style.color = "#000";
+  }
+}
+
+function tutorialNext(){
+  if(tutorialCurrentStep < tutorialSteps.length - 1){
+    tutorialCurrentStep++;
+    updateTutorialDisplay();
+  } else {
+    closeTutorial();
+  }
+}
+
+function tutorialPrev(){
+  if(tutorialCurrentStep > 0){
+    tutorialCurrentStep--;
+    updateTutorialDisplay();
+  }
+}
+
 // ── INIT ─────────────────────────────────────
 document.getElementById("loading").style.display = "none";
 const savedUser = localStorage.getItem("copa2026_user");
@@ -930,6 +1016,12 @@ if(savedUser){
   currentUser = savedUser;
   document.getElementById("login-screen").style.display = "none";
   loadFromFirebase();
+  // Mostrar tutorial na primeira visita
+  setTimeout(()=>{
+    if(!localStorage.getItem("tutorialViewed")){
+      showTutorial();
+    }
+  }, 800);
 }else{
   document.getElementById("login-screen").style.display = "flex";
   document.getElementById("login-input").focus();
