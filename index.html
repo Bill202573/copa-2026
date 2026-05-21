@@ -182,8 +182,8 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
-<div id="login-screen" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 100%);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px">
+<!-- LOGIN SCREEN (DEPRECATED) -->
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 100%);z-index:2000;align-items:center;justify-content:center;padding:20px">
   <div style="background:rgba(15,35,71,.95);border:1px solid rgba(200,168,75,.2);border-radius:20px;padding:40px;max-width:380px;width:100%;text-align:center">
     <div style="font-size:60px;margin-bottom:20px">⚽</div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);letter-spacing:2px;margin-bottom:10px">Copa 2026</div>
@@ -610,14 +610,23 @@ window.loginUser = function(){
 window.logoutUser = function(){
   if(!confirm("Sair e voltar ao login?"))return;
   localStorage.removeItem("copa2026_col");
+  localStorage.removeItem("copa2026_user");
+  localStorage.removeItem("copa2026_userName");
+  localStorage.removeItem("copa2026_userEmail");
+  localStorage.removeItem("copa2026_userWhatsApp");
   currentUser = null;
+  userName = null;
+  userEmail = null;
+  userWhatsApp = null;
   col = {};
-  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("signup-modal").style.display = "flex";
   document.getElementById("header").style.display = "none";
   document.getElementById("content").style.display = "none";
   document.getElementById("loading").style.display = "none";
-  document.getElementById("login-input").value = "";
-  document.getElementById("login-input").focus();
+  document.getElementById("signup-name").value = "";
+  document.getElementById("signup-email").value = "";
+  document.getElementById("signup-whatsapp").value = "";
+  document.getElementById("signup-name").focus();
 };
 
 // ── FIREBASE: CARREGAR ───────────────────────
@@ -1432,6 +1441,9 @@ window.submitSignup = function(){
     return;
   }
 
+  // Definir currentUser como email (identificador único)
+  currentUser = email;
+  localStorage.setItem("copa2026_user", currentUser);
   localStorage.setItem("copa2026_userName", name);
   localStorage.setItem("copa2026_userEmail", email);
   if(whatsapp) localStorage.setItem("copa2026_userWhatsApp", whatsapp);
@@ -1452,7 +1464,11 @@ window.submitSignup = function(){
     registeredAt: new Date().toISOString()
   }, { merge: true });
 
+  // Carregar dados do Firebase
+  loadFromFirebase();
+
   document.getElementById("signup-modal").style.display = "none";
+  document.getElementById("login-screen").style.display = "none";
   showToast("✅ Bem-vindo " + name + "!","success");
 };
 
@@ -1460,8 +1476,10 @@ window.submitSignup = function(){
 document.getElementById("loading").style.display = "none";
 const savedUser = localStorage.getItem("copa2026_user");
 if(savedUser){
+  // Usuário já logado - carregar app
   currentUser = savedUser;
   document.getElementById("login-screen").style.display = "none";
+  document.getElementById("signup-modal").style.display = "none";
   loadFromFirebase();
   // Carregar dados do usuário
   userName = localStorage.getItem("copa2026_userName");
@@ -1484,22 +1502,20 @@ if(savedUser){
     }, { merge: true });
   }
 
-  // Atualizar visibilidade da aba admin (APÓS pré-registro)
+  // Atualizar visibilidade da aba admin
   console.log("🔍 INIT DEBUG - userName:", userName, "userEmail:", userEmail, "savedUser:", savedUser);
   updateAdminTabVisibility();
 
-  // Mostrar signup na primeira visita (mas não para William)
+  // Mostrar tutorial se primeira vez
   setTimeout(()=>{
-    if(savedUser !== "wnogueira@hotmail.com"){
-      showSignupModal();
-    }
     if(!localStorage.getItem("tutorialViewed")){
       showTutorial();
     }
   }, 800);
 }else{
-  document.getElementById("login-screen").style.display = "flex";
-  document.getElementById("login-input").focus();
+  // Novo usuário - mostrar signup direto
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("signup-modal").style.display = "flex";
 }
 
 // Fallback para emojis de bandeira que não renderizam no desktop
