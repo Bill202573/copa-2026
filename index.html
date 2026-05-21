@@ -589,10 +589,9 @@ window.loginUser = function(){
   if(!name){showToast("Digite seu nome ou email","error");return;}
   currentUser = name;
 
-  // Se for um email, usar como userEmail
+  // Se for um email, usar como userEmail (em memória, não salva no localStorage ainda)
   if(rawInput.includes("@")){
     userEmail = rawInput;
-    localStorage.setItem("copa2026_userEmail", userEmail);
   }
 
   localStorage.setItem("copa2026_user", currentUser);
