@@ -261,6 +261,7 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
 
   <!-- REPETIDAS -->
   <div id="tab-repetidas" style="display:none">
+    <button class="reset-btn" onclick="openShareModal('duplicates')" style="background:linear-gradient(135deg,#f0d060,#c8a84b);border:none;color:#000;margin-bottom:15px;font-weight:bold">📤 COMPARTILHAR O QUE TENHO</button>
     <div class="rep-header" id="rep-header"></div>
     <div class="rep-grid" id="rep-grid"></div>
   </div>
@@ -272,6 +273,7 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
       <div class="stat-card"><div class="stat-icon">❌</div><div class="stat-val" id="s-falta" style="color:#e74c3c">993</div><div class="stat-lbl">Falta</div></div>
       <div class="stat-card"><div class="stat-icon">🔁</div><div class="stat-val" id="s-rep" style="color:#c8a84b">0</div><div class="stat-lbl">Repetidas</div></div>
     </div>
+    <button class="reset-btn" onclick="openShareModal('both')" style="background:linear-gradient(135deg,#25d366,#128c7e);border:none;color:#fff;margin-bottom:15px;font-weight:bold;width:100%">📤 COMPARTILHAR COLEÇÃO</button>
     <div class="sel-progress-list">
       <div class="sel-progress-title">🏆 Progresso por Seleção</div>
       <div id="stats-list"></div>
@@ -348,6 +350,34 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
       <button id="tut-prev-btn" style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;opacity:.3;pointer-events:none;transition:all .2s">← VOLTAR</button>
       <button id="tut-next-btn" style="flex:1;background:var(--gold);border:none;color:#000;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;font-weight:bold;cursor:pointer;transition:all .2s">PRÓXIMO →</button>
       <button id="tut-close-btn" style="flex:1;background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.4);color:#2ecc71;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;transition:all .2s">PULAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div id="share-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px;font-family:'Barlow',sans-serif">
+  <div style="background:linear-gradient(180deg,rgba(15,35,71,.95),rgba(10,22,40,.98));border:1px solid rgba(200,168,75,.4);border-radius:24px;max-width:560px;width:100%;padding:30px;box-shadow:0 20px 60px rgba(0,0,0,.5);max-height:90vh;overflow-y:auto">
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:25px">
+      <div style="font-size:48px;margin-bottom:10px">📤</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold);letter-spacing:2px">Compartilhar Coleção</div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <button class="share-tab-btn" data-type="missing" onclick="switchShareTab('missing')" style="flex:1;background:rgba(231,76,60,.2);border:2px solid rgba(231,76,60,.5);color:#e74c3c;padding:12px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .2s;font-weight:bold">🟥 FALTANTES</button>
+      <button class="share-tab-btn" data-type="duplicates" onclick="switchShareTab('duplicates')" style="flex:1;background:rgba(200,168,75,.2);border:2px solid rgba(200,168,75,.3);color:#c8a84b;padding:12px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .2s">🟨 REPETIDAS</button>
+      <button class="share-tab-btn" data-type="both" onclick="switchShareTab('both')" style="flex:1;background:rgba(100,150,255,.2);border:2px solid rgba(100,150,255,.3);color:#64a8ff;padding:12px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;transition:all .2s">🔀 AMBAS</button>
+    </div>
+
+    <!-- Share Text -->
+    <textarea id="share-text" readonly style="width:100%;height:350px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:15px;color:#fff;font-family:'Courier New',monospace;font-size:12px;line-height:1.6;resize:none;margin-bottom:15px;scrollbar-width:thin;scrollbar-color:var(--gold) transparent"></textarea>
+
+    <!-- Buttons -->
+    <div style="display:flex;gap:10px">
+      <button onclick="copyShareText()" style="flex:1;background:var(--gold);border:none;color:#000;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;font-weight:bold;cursor:pointer;transition:all .2s">📋 COPIAR</button>
+      <button onclick="shareWhatsApp()" style="flex:1;background:linear-gradient(135deg,#25d366,#128c7e);border:none;color:#fff;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;font-weight:bold;cursor:pointer;transition:all .2s">💬 WHATSAPP</button>
+      <button onclick="closeShareModal()" style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;transition:all .2s">✕ FECHAR</button>
     </div>
   </div>
 </div>
@@ -1159,6 +1189,79 @@ document.addEventListener("DOMContentLoaded",()=>{
   if(nextBtn) nextBtn.addEventListener("click", window.tutorialNext);
   if(closeBtn) closeBtn.addEventListener("click", window.closeTutorial);
 });
+
+// ── COMPARTILHAMENTO ─────────────────────────
+let currentShareType = "missing";
+
+window.openShareModal = function(type){
+  currentShareType = type || "missing";
+  document.getElementById("share-modal").style.display = "flex";
+  switchShareTab(currentShareType);
+};
+
+window.closeShareModal = function(){
+  document.getElementById("share-modal").style.display = "none";
+};
+
+window.switchShareTab = function(type){
+  currentShareType = type;
+  document.querySelectorAll(".share-tab-btn").forEach(btn => {
+    btn.style.background = btn.dataset.type === type
+      ? (type === "missing" ? "rgba(231,76,60,.4)" : type === "duplicates" ? "rgba(200,168,75,.4)" : "rgba(100,150,255,.4)")
+      : (type === "missing" ? "rgba(231,76,60,.2)" : type === "duplicates" ? "rgba(200,168,75,.2)" : "rgba(100,150,255,.2)");
+    btn.style.borderColor = btn.dataset.type === type ? "rgba(255,255,255,.3)" : "rgba(255,255,255,.1)";
+  });
+  generateShareText();
+};
+
+function generateShareText(){
+  let text = "🎯 BORA TROCAR FIGURINHAS?\n\n";
+
+  if(currentShareType === "missing" || currentShareType === "both"){
+    text += "🟥 FALTAM:\n";
+    for(const sel of TODOS){
+      const missing = [];
+      for(let i = 1; i <= sel.total; i++){
+        if(!col[sel.cod+"_"+i]) missing.push(i);
+      }
+      if(missing.length > 0){
+        text += `${sel.flag} ${sel.cod}: ${missing.join(", ")}\n`;
+      }
+    }
+    text += "\n";
+  }
+
+  if(currentShareType === "duplicates" || currentShareType === "both"){
+    text += "🟨 TENHO REPETIDAS:\n";
+    for(const sel of TODOS){
+      const dups = [];
+      for(let i = 1; i <= sel.total; i++){
+        if(col[sel.cod+"_"+i] === "repetida") dups.push(i);
+      }
+      if(dups.length > 0){
+        text += `${sel.flag} ${sel.cod}: ${dups.join(", ")}\n`;
+      }
+    }
+    text += "\n";
+  }
+
+  text += "Bora trocar? 📱\nhttps://copa.carreiraid.com.br";
+
+  document.getElementById("share-text").value = text;
+}
+
+window.copyShareText = function(){
+  const text = document.getElementById("share-text");
+  text.select();
+  document.execCommand("copy");
+  showToast("✅ Copiado para área de transferência!","success");
+};
+
+window.shareWhatsApp = function(){
+  const text = encodeURIComponent(document.getElementById("share-text").value);
+  const url = `https://wa.me/?text=${text}`;
+  window.open(url, "_blank");
+};
 
 // ── INIT ─────────────────────────────────────
 document.getElementById("loading").style.display = "none";
