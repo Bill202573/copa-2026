@@ -1349,9 +1349,28 @@ if(savedUser){
   userName = localStorage.getItem("copa2026_userName");
   userEmail = localStorage.getItem("copa2026_userEmail");
   userWhatsApp = localStorage.getItem("copa2026_userWhatsApp");
-  // Mostrar signup na primeira visita
+
+  // Pré-registro para William Nogueira
+  if(savedUser === "wnogueira@hotmail.com" && !userName){
+    localStorage.setItem("copa2026_userName", "William Nogueira");
+    localStorage.setItem("copa2026_userEmail", "wnogueira@hotmail.com");
+    userName = "William Nogueira";
+    userEmail = "wnogueira@hotmail.com";
+    // Salvar no Firebase
+    const userRef = doc(db, "users", "wnogueira@hotmail.com");
+    setDoc(userRef, {
+      name: "William Nogueira",
+      email: "wnogueira@hotmail.com",
+      whatsapp: "",
+      registeredAt: new Date().toISOString()
+    }, { merge: true });
+  }
+
+  // Mostrar signup na primeira visita (mas não para William)
   setTimeout(()=>{
-    showSignupModal();
+    if(savedUser !== "wnogueira@hotmail.com"){
+      showSignupModal();
+    }
     if(!localStorage.getItem("tutorialViewed")){
       showTutorial();
     }
