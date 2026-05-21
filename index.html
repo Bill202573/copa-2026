@@ -598,6 +598,13 @@ window.loginUser = function(){
   document.getElementById("login-screen").style.display = "none";
   updateAdminTabVisibility();
   loadFromFirebase();
+
+  // Mostrar signup se é novo usuário
+  if(!localStorage.getItem("copa2026_userEmail")){
+    setTimeout(()=>{
+      showSignupModal();
+    }, 500);
+  }
 };
 
 window.logoutUser = function(){
