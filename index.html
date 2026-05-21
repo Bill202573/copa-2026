@@ -1372,7 +1372,7 @@ window.shareWhatsApp = function(){
 };
 
 // ── COMPARTILHAMENTO ────────────────────────
-function shareApp(){
+window.shareApp = function(){
   const appUrl = "https://copa.carreiraid.com.br";
   const appTitle = "⚽ Copa 2026 — Controle de Figurinhas";
   const appText = "Vem controlar sua coleção de figurinhas da Copa 2026 comigo! App grátis e sincroniza entre dispositivos.";
@@ -1395,7 +1395,7 @@ function shareApp(){
       }, 1000);
     }
   }
-}
+};
 
 // ── ADMIN ───────────────────────────────────
 async function loadAdminData(){
