@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Copa 2026</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(160deg, #060f24 0%, #0f2347 60%, #061830 100%);
+      color: #fff;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .login-box {
+      background: rgba(15, 35, 71, 0.9);
+      border: 1px solid rgba(200, 168, 75, 0.3);
+      border-radius: 14px;
+      padding: 40px;
+      text-align: center;
+      max-width: 400px;
+      margin: 100px auto;
+    }
+    .login-box h1 {
+      color: #c8a84b;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+    }
+    .login-box input::placeholder { color: rgba(255, 255, 255, 0.4); }
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      background: #c8a84b;
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .login-box button:hover { background: #f0d060; }
+
+    .admin-panel {
+      display: none;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      background: rgba(15, 35, 71, 0.9);
+      border: 1px solid rgba(200, 168, 75, 0.3);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .admin-header h1 { color: #c8a84b; font-size: 28px; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: rgba(15, 35, 71, 0.9);
+      border: 1px solid rgba(200, 168, 75, 0.3);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+    }
+    .stat-card .number {
+      font-size: 36px;
+      color: #c8a84b;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .stat-card .label {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(15, 35, 71, 0.9);
+      border: 1px solid rgba(200, 168, 75, 0.3);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    th {
+      background: rgba(200, 168, 75, 0.2);
+      border-bottom: 1px solid rgba(200, 168, 75, 0.3);
+      padding: 12px;
+      text-align: left;
+      color: #c8a84b;
+      font-weight: bold;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 14px;
+    }
+    tr:hover { background: rgba(200, 168, 75, 0.05); }
+
+    .btn-logout {
+      background: #e74c3c;
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn-logout:hover { background: #c0392b; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- LOGIN -->
+  <div id="login-section" class="login-box">
+    <h1>🔐 Acesso Admin</h1>
+    <input type="password" id="password-input" placeholder="Digite a senha" autocomplete="off">
+    <button onclick="authenticate()">ENTRAR</button>
+  </div>
+
+  <!-- PANEL -->
+  <div id="admin-panel" class="admin-panel">
+    <div class="admin-header">
+      <div>
+        <h1>📊 Painel Admin</h1>
+        <p style="color: rgba(255,255,255,.6);font-size:12px;margin-top:5px">Copa 2026 - Figurinhas</p>
+      </div>
+      <button class="btn-logout" onclick="logout()">SAIR</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="number" id="total-users">0</div>
+        <div class="label">Total de Usuários</div>
+      </div>
+      <div class="stat-card">
+        <div class="number" id="with-whatsapp">0</div>
+        <div class="label">Com WhatsApp</div>
+      </div>
+      <div class="stat-card">
+        <div class="number" id="last-registered">-</div>
+        <div class="label">Último Registro</div>
+      </div>
+    </div>
+
+    <h2 style="color: #c8a84b; margin-bottom: 15px; margin-top: 20px;">📋 Lista de Usuários</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>WhatsApp</th>
+          <th>Registrado em</th>
+        </tr>
+      </thead>
+      <tbody id="users-list">
+        <tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.5)">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDL6uTsvOpaYJPm_ctsjINMsI1WfgKRrOw",
+  authDomain: "figurinha-copa-2026.firebaseapp.com",
+  projectId: "figurinha-copa-2026",
+  storageBucket: "figurinha-copa-2026.firebasestorage.app",
+  messagingSenderId: "462767524418",
+  appId: "1:462767524418:web:2b0933f09a9a66b4957bdb"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// SENHA ADMIN (mude para algo seguro!)
+const ADMIN_PASSWORD = "Copa2026";
+
+window.authenticate = function(){
+  const password = document.getElementById("password-input").value;
+  if(password === ADMIN_PASSWORD){
+    localStorage.setItem("admin-authenticated", "true");
+    loadUsers();
+    document.getElementById("login-section").style.display = "none";
+    document.getElementById("admin-panel").style.display = "block";
+  } else {
+    alert("❌ Senha incorreta!");
+  }
+};
+
+window.logout = function(){
+  localStorage.removeItem("admin-authenticated");
+  document.getElementById("login-section").style.display = "block";
+  document.getElementById("admin-panel").style.display = "none";
+  document.getElementById("password-input").value = "";
+};
+
+async function loadUsers(){
+  try {
+    const querySnapshot = await getDocs(collection(db, "users"));
+    const users = [];
+    let withWhatsApp = 0;
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      users.push(data);
+      if(data.whatsapp) withWhatsApp++;
+    });
+
+    // Ordenar por data
+    users.sort((a, b) => new Date(b.registeredAt) - new Date(a.registeredAt));
+
+    // Atualizar stats
+    document.getElementById("total-users").textContent = users.length;
+    document.getElementById("with-whatsapp").textContent = withWhatsApp;
+    if(users.length > 0){
+      const lastDate = new Date(users[0].registeredAt);
+      document.getElementById("last-registered").textContent = lastDate.toLocaleDateString("pt-BR");
+    }
+
+    // Preencher tabela
+    const tbody = document.getElementById("users-list");
+    tbody.innerHTML = users.length === 0
+      ? '<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,.5)">Nenhum usuário registrado ainda</td></tr>'
+      : users.map(u => `
+        <tr>
+          <td>${u.name}</td>
+          <td>${u.email}</td>
+          <td>${u.whatsapp || "-"}</td>
+          <td>${new Date(u.registeredAt).toLocaleDateString("pt-BR")} ${new Date(u.registeredAt).toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"})}</td>
+        </tr>
+      `).join("");
+
+  } catch(err){
+    console.error("Erro ao carregar usuários:", err);
+    document.getElementById("users-list").innerHTML = '<tr><td colspan="4" style="text-align:center;color:#e74c3c">Erro ao carregar dados</td></tr>';
+  }
+}
+
+// Verificar se já está autenticado
+if(localStorage.getItem("admin-authenticated")){
+  document.getElementById("login-section").style.display = "none";
+  document.getElementById("admin-panel").style.display = "block";
+  loadUsers();
+}
+</script>
+
+</body>
+</html>

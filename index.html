@@ -261,6 +261,17 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
     </a>
 
     <input class="filter-input" id="filter-input" type="text" placeholder="🔍 Filtrar seleção (Brasil, Alemanha, ESP…)" autocomplete="off" oninput="renderAlbum()">
+
+    <!-- BANNER VENDA ÁLBUM -->
+    <a href="https://amzn.to/3Rp0tiC" target="_blank" style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#0066cc,#0052a3);border-radius:12px;padding:14px;margin-bottom:14px;text-decoration:none;transition:all .3s;box-shadow:0 4px 12px rgba(0,102,204,.3)">
+      <div style="font-size:40px;flex-shrink:0">📚</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#ffd700;letter-spacing:.5px;margin-bottom:4px">COMPRE AQUI</div>
+        <div style="font-size:12px;color:#fff;line-height:1.3">Compre por este link e ajude o App!</div>
+      </div>
+      <button style="background:#ffd700;border:none;color:#000;padding:8px 14px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:.5px;font-weight:bold;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0">RECEBA EM CASA</button>
+    </a>
+
     <div class="grupo-btns" id="grupo-btns"></div>
     <div class="sel-list" id="sel-list"></div>
   </div>
@@ -319,6 +330,22 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
   </div>
 </div>
 
+<!-- SIGNUP MODAL -->
+<div id="signup-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2002;display:none;align-items:center;justify-content:center;padding:20px;font-family:'Barlow',sans-serif">
+  <div style="background:linear-gradient(180deg,rgba(15,35,71,.95),rgba(10,22,40,.98));border:1px solid rgba(200,168,75,.4);border-radius:24px;max-width:480px;width:100%;padding:40px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="text-align:center;margin-bottom:30px">
+      <div style="font-size:48px;margin-bottom:10px">⚽</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold);letter-spacing:2px;margin-bottom:8px">Bem-vindo!</div>
+      <div style="font-size:14px;color:rgba(255,255,255,.7)">Registre-se para acompanhar sua coleção</div>
+    </div>
+
+    <input type="text" id="signup-name" placeholder="Seu nome" style="width:100%;padding:12px;margin-bottom:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:'Barlow',sans-serif;font-size:14px">
+    <input type="email" id="signup-email" placeholder="Seu email" style="width:100%;padding:12px;margin-bottom:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:'Barlow',sans-serif;font-size:14px">
+    <input type="tel" id="signup-whatsapp" placeholder="WhatsApp (opcional)" style="width:100%;padding:12px;margin-bottom:20px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-family:'Barlow',sans-serif;font-size:14px">
+
+    <button onclick="submitSignup()" style="width:100%;background:var(--gold);border:none;color:#000;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;font-weight:bold;cursor:pointer;transition:all .2s">CONTINUAR</button>
+  </div>
+</div>
 
 <div id="toast"></div>
 <div id="install-banner">
@@ -1269,6 +1296,48 @@ window.shareWhatsApp = function(){
   window.open(url, "_blank");
 };
 
+// ── SIGNUP ──────────────────────────────────
+let userEmail = null;
+let userName = null;
+let userWhatsApp = null;
+
+function showSignupModal(){
+  if(!localStorage.getItem("copa2026_userEmail")){
+    document.getElementById("signup-modal").style.display = "flex";
+  }
+}
+
+window.submitSignup = function(){
+  const name = document.getElementById("signup-name").value.trim();
+  const email = document.getElementById("signup-email").value.trim();
+  const whatsapp = document.getElementById("signup-whatsapp").value.trim();
+
+  if(!name || !email){
+    showToast("❌ Nome e email são obrigatórios!","error");
+    return;
+  }
+
+  localStorage.setItem("copa2026_userName", name);
+  localStorage.setItem("copa2026_userEmail", email);
+  if(whatsapp) localStorage.setItem("copa2026_userWhatsApp", whatsapp);
+
+  userName = name;
+  userEmail = email;
+  userWhatsApp = whatsapp;
+
+  // Salvar no Firebase
+  const userRef = doc(db, "users", email);
+  setDoc(userRef, {
+    name: name,
+    email: email,
+    whatsapp: whatsapp || "",
+    registeredAt: new Date().toISOString()
+  }, { merge: true });
+
+  document.getElementById("signup-modal").style.display = "none";
+  showToast("✅ Bem-vindo " + name + "!","success");
+};
+
 // ── INIT ─────────────────────────────────────
 document.getElementById("loading").style.display = "none";
 const savedUser = localStorage.getItem("copa2026_user");
@@ -1276,8 +1345,13 @@ if(savedUser){
   currentUser = savedUser;
   document.getElementById("login-screen").style.display = "none";
   loadFromFirebase();
-  // Mostrar tutorial na primeira visita
+  // Carregar dados do usuário
+  userName = localStorage.getItem("copa2026_userName");
+  userEmail = localStorage.getItem("copa2026_userEmail");
+  userWhatsApp = localStorage.getItem("copa2026_userWhatsApp");
+  // Mostrar signup na primeira visita
   setTimeout(()=>{
+    showSignupModal();
     if(!localStorage.getItem("tutorialViewed")){
       showTutorial();
     }
