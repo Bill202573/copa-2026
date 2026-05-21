@@ -233,6 +233,7 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
     <button class="tab-btn active" data-tab="album" onclick="switchTab('album')">📖 Álbum</button>
     <button class="tab-btn" data-tab="repetidas" onclick="switchTab('repetidas')">🔁 Repetidas</button>
     <button class="tab-btn" data-tab="stats" onclick="switchTab('stats')">📊 Stats</button>
+    <button class="tab-btn" data-tab="info" onclick="switchTab('info')">ℹ️ Info</button>
   </div>
 </div>
 
@@ -283,6 +284,31 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
     <button class="reset-btn" onclick="resetCollection()">🗑️ RESETAR TODA A COLEÇÃO</button>
     <a href="./data-helper.html" class="reset-btn" style="background:rgba(200,168,75,.1);border:1px solid #c8a84b;color:#f0d060;text-decoration:none;display:flex;align-items:center;justify-content:center;margin-top:10px">🔧 RECUPERADOR DE DADOS</a>
   </div>
+
+  <!-- INFO -->
+  <div id="tab-info" style="display:none">
+    <div style="background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.3);border-radius:14px;padding:20px;margin-bottom:20px">
+      <div style="font-size:18px;margin-bottom:12px;color:var(--gold)">📚 Sobre o App</div>
+      <div style="color:rgba(255,255,255,.8);line-height:1.8;font-size:14px">
+        <p style="margin-bottom:10px"><strong>Copa 2026 - Figurinhas</strong> ajuda você a controlar suas figurinhas da Copa do Mundo.</p>
+        <p style="margin-bottom:10px">💾 Seus dados são salvos automaticamente e sincronizados entre todos os seus dispositivos.</p>
+        <p style="margin-bottom:10px">📱 Use o app offline — funciona sem conexão!</p>
+      </div>
+    </div>
+    <button class="reset-btn" onclick="window.showTutorial()" style="background:var(--gold);border:none;color:#000;margin-bottom:20px">🎓 VER TUTORIAL</button>
+    <div style="background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.3);border-radius:14px;padding:20px">
+      <div style="font-size:14px;color:rgba(255,255,255,.7);line-height:1.8">
+        <strong style="color:#2ecc71">💡 Dicas:</strong><br>
+        • Clique nas figurinhas para marcar como "tenho" ou "repetida"<br>
+        • Use a barra de busca para filtrar seleções<br>
+        • Na aba "Repetidas" veja quais estão disponíveis para troca<br>
+        • Exporte seus dados para backup seguro<br>
+        <br>
+        <strong style="color:#2ecc71">🔗 Dúvidas?</strong><br>
+        Veja o tutorial clicando no botão acima!
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -297,22 +323,31 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
 </div>
 
 <!-- TUTORIAL MODAL -->
-<div id="tutorial-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2001;display:none;align-items:center;justify-content:center;padding:20px">
-  <div style="background:rgba(10,22,40,.98);border:1px solid rgba(200,168,75,.3);border-radius:20px;max-width:450px;width:100%;padding:30px">
-    <div style="text-align:center;margin-bottom:25px">
-      <div style="font-size:48px;margin-bottom:10px" id="tut-icon">⚽</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);letter-spacing:2px;margin-bottom:8px" id="tut-title">Copa 2026 - Tutorial</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.5)" id="tut-step">Passo 1 de 4</div>
+<div id="tutorial-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2001;display:none;align-items:center;justify-content:center;padding:20px;font-family:'Barlow',sans-serif">
+  <div style="background:linear-gradient(180deg,rgba(15,35,71,.95),rgba(10,22,40,.98));border:1px solid rgba(200,168,75,.4);border-radius:24px;max-width:520px;width:100%;padding:40px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:30px">
+      <div style="font-size:56px;margin-bottom:12px" id="tut-icon">⚽</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);letter-spacing:2px;margin-bottom:5px" id="tut-title">Aprenda a Usar</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:1px;text-transform:uppercase" id="tut-step">Passo 1 de 3</div>
     </div>
 
-    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:15px;margin-bottom:20px;min-height:80px">
-      <div style="font-size:14px;line-height:1.6" id="tut-content"></div>
+    <!-- Content -->
+    <div id="tut-content" style="font-size:15px;line-height:1.8;color:rgba(255,255,255,.85);margin-bottom:30px"></div>
+
+    <!-- Visual Example -->
+    <div id="tut-example" style="background:rgba(255,255,255,.05);border:1px solid rgba(200,168,75,.2);border-radius:12px;padding:20px;margin-bottom:25px"></div>
+
+    <!-- Progress Bar -->
+    <div style="background:rgba(255,255,255,.08);height:3px;border-radius:2px;margin-bottom:25px;overflow:hidden">
+      <div id="tut-progress" style="height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));width:33%;transition:width .3s"></div>
     </div>
 
-    <div style="display:flex;gap:10px">
-      <button id="tut-prev" onclick="tutorialPrev()" style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px;border-radius:8px;cursor:pointer;font-family:'Bebas Neue',sans-serif">← VOLTAR</button>
-      <button id="tut-next" onclick="tutorialNext()" style="flex:1;background:var(--gold);border:none;color:#000;padding:10px;border-radius:8px;cursor:pointer;font-family:'Bebas Neue',sans-serif;font-weight:bold">PRÓXIMO →</button>
-      <button onclick="closeTutorial()" style="flex:1;background:rgba(46,204,113,.1);border:1px solid #27ae60;color:#2ecc71;padding:10px;border-radius:8px;cursor:pointer;font-family:'Bebas Neue',sans-serif">PULAR</button>
+    <!-- Buttons -->
+    <div style="display:flex;gap:12px">
+      <button id="tut-prev-btn" style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;opacity:.3;pointer-events:none;transition:all .2s">← VOLTAR</button>
+      <button id="tut-next-btn" style="flex:1;background:var(--gold);border:none;color:#000;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;font-weight:bold;cursor:pointer;transition:all .2s">PRÓXIMO →</button>
+      <button id="tut-close-btn" style="flex:1;background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.4);color:#2ecc71;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;transition:all .2s">PULAR</button>
     </div>
   </div>
 </div>
@@ -690,7 +725,7 @@ window.toggleSel=function(cod){
 // ── TABS ─────────────────────────────────────
 window.switchTab=function(tab){
   activeTab=tab;
-  ["album","repetidas","stats"].forEach(t=>{
+  ["album","repetidas","stats","info"].forEach(t=>{
     document.getElementById("tab-"+t).style.display=t===tab?"block":"none";
     document.querySelector(`[data-tab="${t}"]`).className="tab-btn"+(t===tab?" active":"");
   });
@@ -954,60 +989,136 @@ if(isIOS){
 
 // ── TUTORIAL ─────────────────────────────────
 const tutorialSteps = [
-  {icon:"✅",title:"Marcando Figurinhas",content:"Toque em uma figurinha para alternar entre:<br><strong>✅ Tenho</strong> (colada) | <strong>🔁 Repetida</strong> (cópia extra) | <strong>❌ Falta</strong> (removida)"},
-  {icon:"🔍",title:"Buscando Países",content:"Use o filtro para buscar por:<br><strong>Nome:</strong> Brasil, Alemanha, etc.<br><strong>Sigla:</strong> BRA, GER, AUS (3 letras)"},
-  {icon:"📊",title:"Vendo Estatísticas",content:"No tab <strong>Info</strong> veja:<br>• Total de figurinhas que tem<br>• Quantas faltam<br>• Progresso por país"},
-  {icon:"💾",title:"Salvando seus Dados",content:"Seus dados salvam automaticamente!<br>No tab <strong>Info</strong>:<br>• <strong>EXPORTAR</strong> para fazer backup<br>• <strong>IMPORTAR</strong> para restaurar"}
+  {
+    icon:"🎯",
+    title:"Como Marcar Figurinhas",
+    content:"<strong>Toque em uma figurinha</strong> para marcar seu status:<br>🟩 <strong>Tenho</strong> = colada no álbum<br>🟨 <strong>Repetida</strong> = cópia extra<br>🟦 <strong>Falta</strong> = remover marca",
+    example:`<div style="text-align:center">
+      <div style="font-size:24px;margin-bottom:10px">🇧🇷 <strong>BRASIL</strong></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:15px 0">
+        <div style="background:#2ecc71;padding:8px;border-radius:6px;color:#fff;font-size:11px;font-weight:bold">✓ 1</div>
+        <div style="background:#2ecc71;padding:8px;border-radius:6px;color:#fff;font-size:11px;font-weight:bold">✓ 2</div>
+        <div style="background:#c8a84b;padding:8px;border-radius:6px;color:#fff;font-size:11px;font-weight:bold">⟳ 3</div>
+        <div style="background:rgba(255,255,255,.1);padding:8px;border-radius:6px;color:rgba(255,255,255,.4);font-size:11px;font-weight:bold">⊘ 4</div>
+        <div style="background:#2ecc71;padding:8px;border-radius:6px;color:#fff;font-size:11px;font-weight:bold">✓ 5</div>
+        <div style="background:rgba(255,255,255,.1);padding:8px;border-radius:6px;color:rgba(255,255,255,.4);font-size:11px;font-weight:bold">⊘ 6</div>
+        <div style="background:#c8a84b;padding:8px;border-radius:6px;color:#fff;font-size:11px;font-weight:bold">⟳ 7</div>
+        <div style="background:#2ecc71;padding:8px;border-radius:6px;color:#fff;font-size:11px;font-weight:bold">✓ 8</div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:10px">Toque em qualquer número para mudar o status</div>
+    </div>`
+  },
+  {
+    icon:"🔍",
+    title:"Buscando por País",
+    content:"Use o <strong>filtro de busca</strong> para encontrar países:<br><br>✓ Por <strong>nome:</strong> Brasil, Alemanha<br>✓ Por <strong>sigla:</strong> BRA, GER, AUS",
+    example:`<div style="background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.3);border-radius:10px;padding:12px;margin:10px 0">
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:6px">🔍 Exemplo de buscas</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <div style="background:var(--gold);color:#000;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:bold">Brasil</div>
+        <div style="background:var(--gold);color:#000;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:bold">BRA</div>
+        <div style="background:var(--gold);color:#000;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:bold">Argentina</div>
+        <div style="background:var(--gold);color:#000;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:bold">ARG</div>
+      </div>
+    </div>`
+  },
+  {
+    icon:"💾",
+    title:"Salvando Seus Dados",
+    content:"<strong>Seus dados salvam automaticamente!</strong><br><br>Na aba <strong>Info</strong>:<br>✓ <strong>EXPORTAR:</strong> fazer backup<br>✓ <strong>IMPORTAR:</strong> restaurar dados<br>✓ <strong>VER TUTORIAL:</strong> ver este guia novamente",
+    example:`<div style="text-align:center">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:15px 0">
+        <div style="background:rgba(46,204,113,.15);border:1px solid #27ae60;border-radius:8px;padding:12px">
+          <div style="font-size:28px;margin-bottom:6px">💾</div>
+          <div style="font-size:12px;font-weight:bold;color:#2ecc71">Exportar</div>
+        </div>
+        <div style="background:rgba(100,150,255,.15);border:1px solid #6496ff;border-radius:8px;padding:12px">
+          <div style="font-size:28px;margin-bottom:6px">📥</div>
+          <div style="font-size:12px;font-weight:bold;color:#64a8ff">Importar</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:10px">Seus dados estão sempre sincronizados</div>
+    </div>`
+  }
 ];
+
 let tutorialCurrentStep = 0;
 
-function showTutorial(){
+window.showTutorial = function(){
   tutorialCurrentStep = 0;
   document.getElementById("tutorial-modal").style.display = "flex";
   updateTutorialDisplay();
-}
+};
 
-function closeTutorial(){
+window.closeTutorial = function(){
   document.getElementById("tutorial-modal").style.display = "none";
   localStorage.setItem("tutorialViewed","1");
-}
+};
 
 function updateTutorialDisplay(){
   const step = tutorialSteps[tutorialCurrentStep];
+  const isFirst = tutorialCurrentStep === 0;
+  const isLast = tutorialCurrentStep === tutorialSteps.length - 1;
+
   document.getElementById("tut-icon").textContent = step.icon;
   document.getElementById("tut-title").textContent = step.title;
   document.getElementById("tut-content").innerHTML = step.content;
+  document.getElementById("tut-example").innerHTML = step.example;
   document.getElementById("tut-step").textContent = `Passo ${tutorialCurrentStep+1} de ${tutorialSteps.length}`;
 
-  document.getElementById("tut-prev").style.opacity = tutorialCurrentStep === 0 ? ".3" : "1";
-  document.getElementById("tut-prev").disabled = tutorialCurrentStep === 0;
+  // Atualizar progress bar
+  const progress = ((tutorialCurrentStep + 1) / tutorialSteps.length) * 100;
+  document.getElementById("tut-progress").style.width = progress + "%";
 
-  if(tutorialCurrentStep === tutorialSteps.length - 1){
-    document.getElementById("tut-next").textContent = "FINALIZAR ✓";
-    document.getElementById("tut-next").style.background = "var(--green)";
-    document.getElementById("tut-next").style.color = "#fff";
+  // Botão Voltar
+  const prevBtn = document.getElementById("tut-prev-btn");
+  if(isFirst){
+    prevBtn.style.opacity = "0.3";
+    prevBtn.style.pointerEvents = "none";
   } else {
-    document.getElementById("tut-next").textContent = "PRÓXIMO →";
-    document.getElementById("tut-next").style.background = "var(--gold)";
-    document.getElementById("tut-next").style.color = "#000";
+    prevBtn.style.opacity = "1";
+    prevBtn.style.pointerEvents = "auto";
+  }
+
+  // Botão Próximo/Finalizar
+  const nextBtn = document.getElementById("tut-next-btn");
+  if(isLast){
+    nextBtn.textContent = "FINALIZAR ✓";
+    nextBtn.style.background = "var(--green)";
+    nextBtn.style.color = "#fff";
+  } else {
+    nextBtn.textContent = "PRÓXIMO →";
+    nextBtn.style.background = "var(--gold)";
+    nextBtn.style.color = "#000";
   }
 }
 
-function tutorialNext(){
+window.tutorialNext = function(){
   if(tutorialCurrentStep < tutorialSteps.length - 1){
     tutorialCurrentStep++;
     updateTutorialDisplay();
   } else {
     closeTutorial();
   }
-}
+};
 
-function tutorialPrev(){
+window.tutorialPrev = function(){
   if(tutorialCurrentStep > 0){
     tutorialCurrentStep--;
     updateTutorialDisplay();
   }
-}
+};
+
+// Adicionar event listeners aos botões
+document.addEventListener("DOMContentLoaded",()=>{
+  const prevBtn = document.getElementById("tut-prev-btn");
+  const nextBtn = document.getElementById("tut-next-btn");
+  const closeBtn = document.getElementById("tut-close-btn");
+
+  if(prevBtn) prevBtn.addEventListener("click", window.tutorialPrev);
+  if(nextBtn) nextBtn.addEventListener("click", window.tutorialNext);
+  if(closeBtn) closeBtn.addEventListener("click", window.closeTutorial);
+});
 
 // ── INIT ─────────────────────────────────────
 document.getElementById("loading").style.display = "none";
