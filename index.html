@@ -296,18 +296,18 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
       </div>
     </div>
     <button class="reset-btn" onclick="window.showTutorial()" style="background:var(--gold);border:none;color:#000;margin-bottom:20px">🎓 VER TUTORIAL</button>
-    <div style="background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.3);border-radius:14px;padding:20px">
+    <div style="background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.3);border-radius:14px;padding:20px;margin-bottom:20px">
       <div style="font-size:14px;color:rgba(255,255,255,.7);line-height:1.8">
         <strong style="color:#2ecc71">💡 Dicas:</strong><br>
         • Clique nas figurinhas para marcar como "tenho" ou "repetida"<br>
         • Use a barra de busca para filtrar seleções<br>
         • Na aba "Repetidas" veja quais estão disponíveis para troca<br>
         • Exporte seus dados para backup seguro<br>
-        <br>
-        <strong style="color:#2ecc71">🔗 Dúvidas?</strong><br>
-        Veja o tutorial clicando no botão acima!
       </div>
     </div>
+    <a href="https://wa.me/5521969622045" target="_blank" style="background:linear-gradient(135deg,#25d366,#128c7e);border:none;color:#fff;padding:16px 20px;border-radius:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:bold;font-size:15px;cursor:pointer;transition:all .2s">
+      💬 DÚVIDAS E SUGESTÕES
+    </a>
   </div>
 </div>
 
@@ -329,7 +329,7 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
     <div style="text-align:center;margin-bottom:30px">
       <div style="font-size:56px;margin-bottom:12px" id="tut-icon">⚽</div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);letter-spacing:2px;margin-bottom:5px" id="tut-title">Aprenda a Usar</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:1px;text-transform:uppercase" id="tut-step">Passo 1 de 3</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:1px;text-transform:uppercase" id="tut-step">Passo 1 de 5</div>
     </div>
 
     <!-- Content -->
@@ -1038,6 +1038,46 @@ const tutorialSteps = [
         </div>
       </div>
       <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:10px">Seus dados estão sempre sincronizados</div>
+    </div>`
+  },
+  {
+    icon:"🔁",
+    title:"Aba Repetidas",
+    content:"Veja aqui <strong>todas as figurinhas que você tem repetidas</strong> e está pronto para trocar!<br><br>Perfeito para saber <strong>exatamente quais figurinhas você pode oferecer</strong> em uma negociação.",
+    example:`<div style="text-align:center">
+      <div style="font-size:24px;margin-bottom:10px">🔁 <strong>REPETIDAS</strong></div>
+      <div style="background:rgba(200,168,75,.15);border:1px solid rgba(200,168,75,.3);border-radius:10px;padding:15px;margin:10px 0">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div style="background:var(--gold);color:#000;padding:10px;border-radius:8px;font-size:12px;font-weight:bold">🇧🇷 BRA #5</div>
+          <div style="background:var(--gold);color:#000;padding:10px;border-radius:8px;font-size:12px;font-weight:bold">🇦🇷 ARG #12</div>
+          <div style="background:var(--gold);color:#000;padding:10px;border-radius:8px;font-size:12px;font-weight:bold">🇩🇪 ALE #8</div>
+          <div style="background:var(--gold);color:#000;padding:10px;border-radius:8px;font-size:12px;font-weight:bold">🇪🇸 ESP #3</div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5)">Clique em qualquer uma para ir direto no álbum</div>
+      </div>
+    </div>`
+  },
+  {
+    icon:"📊",
+    title:"Aba Stats",
+    content:"Acompanhe <strong>seu progresso geral</strong> e veja quanto já completou de cada seleção:<br><br>📈 <strong>Tenho:</strong> figurinhas coladas<br>❌ <strong>Falta:</strong> ainda precisa<br>🔁 <strong>Repetidas:</strong> disponível para troca",
+    example:`<div style="text-align:center">
+      <div style="font-size:24px;margin-bottom:10px">📊 <strong>ESTATÍSTICAS</strong></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:15px 0">
+        <div style="background:rgba(46,204,113,.15);border:1px solid #27ae60;border-radius:8px;padding:10px">
+          <div style="font-size:24px;color:#2ecc71;font-weight:bold">450</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.6)">Tenho</div>
+        </div>
+        <div style="background:rgba(231,76,60,.15);border:1px solid #e74c3c;border-radius:8px;padding:10px">
+          <div style="font-size:24px;color:#e74c3c;font-weight:bold">430</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.6)">Falta</div>
+        </div>
+        <div style="background:rgba(200,168,75,.15);border:1px solid #c8a84b;border-radius:8px;padding:10px">
+          <div style="font-size:24px;color:#c8a84b;font-weight:bold">100</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.6)">Repetidas</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:10px">📈 46% de progresso no álbum</div>
     </div>`
   }
 ];
