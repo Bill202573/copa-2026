@@ -234,6 +234,7 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
     <button class="tab-btn" data-tab="repetidas" onclick="switchTab('repetidas')">🔁 Repetidas</button>
     <button class="tab-btn" data-tab="stats" onclick="switchTab('stats')">📊 Stats</button>
     <button class="tab-btn" data-tab="info" onclick="switchTab('info')">ℹ️ Info</button>
+    <button class="tab-btn" data-tab="admin" onclick="switchTab('admin')" id="admin-tab-btn" style="display:none">👤 Admin</button>
   </div>
 </div>
 
@@ -328,6 +329,45 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
       💬 DÚVIDAS E SUGESTÕES
     </a>
   </div>
+
+  <!-- ADMIN -->
+  <div id="tab-admin" style="display:none">
+    <div style="margin-bottom:20px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px">
+        <div style="background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.3);border-radius:14px;padding:16px;text-align:center">
+          <div style="font-size:28px;color:var(--gold);font-weight:bold;margin-bottom:4px" id="admin-total-users">0</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.6)">Total de Usuários</div>
+        </div>
+        <div style="background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);border-radius:14px;padding:16px;text-align:center">
+          <div style="font-size:28px;color:#2ecc71;font-weight:bold;margin-bottom:4px" id="admin-whatsapp-count">0</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.6)">Com WhatsApp</div>
+        </div>
+        <div style="background:rgba(100,150,255,.1);border:1px solid rgba(100,150,255,.3);border-radius:14px;padding:16px;text-align:center">
+          <div style="font-size:28px;color:#64a8ff;font-weight:bold;margin-bottom:4px" id="admin-last-registered">-</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.6)">Último Registro</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(15,35,71,.9);border:1px solid rgba(200,168,75,.3);border-radius:14px;padding:0;overflow:hidden">
+      <div style="padding:16px;border-bottom:1px solid rgba(200,168,75,.3);font-weight:bold;color:var(--gold);font-size:14px">📋 LISTA DE USUÁRIOS</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="background:rgba(200,168,75,.15)">
+              <th style="padding:12px;text-align:left;color:var(--gold);font-weight:bold;border-bottom:1px solid rgba(200,168,75,.3)">Nome</th>
+              <th style="padding:12px;text-align:left;color:var(--gold);font-weight:bold;border-bottom:1px solid rgba(200,168,75,.3)">Email</th>
+              <th style="padding:12px;text-align:left;color:var(--gold);font-weight:bold;border-bottom:1px solid rgba(200,168,75,.3)">WhatsApp</th>
+              <th style="padding:12px;text-align:left;color:var(--gold);font-weight:bold;border-bottom:1px solid rgba(200,168,75,.3)">Registrado em</th>
+            </tr>
+          </thead>
+          <tbody id="admin-users-table" style="background:rgba(15,35,71,.6)">
+            <tr><td colspan="4" style="padding:12px;text-align:center;color:rgba(255,255,255,.4)">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- SIGNUP MODAL -->
@@ -418,7 +458,7 @@ body{background:linear-gradient(160deg,var(--dark) 0%,var(--dark3) 60%,#061830 1
 <!-- FIREBASE SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 // ── CONFIG FIREBASE ──────────────────────────
 const firebaseConfig = {
@@ -544,11 +584,20 @@ let ignoreSnapshot = false;
 // ── LOGIN ─────────────────────────────────────
 window.loginUser = function(){
   const input = document.getElementById("login-input");
-  const name = input.value.trim().toLowerCase().replace(/\s+/g,"_").substring(0,50);
+  const rawInput = input.value.trim();
+  const name = rawInput.toLowerCase().replace(/\s+/g,"_").substring(0,50);
   if(!name){showToast("Digite seu nome ou email","error");return;}
   currentUser = name;
+
+  // Se for um email, usar como userEmail
+  if(rawInput.includes("@")){
+    userEmail = rawInput;
+    localStorage.setItem("copa2026_userEmail", userEmail);
+  }
+
   localStorage.setItem("copa2026_user", currentUser);
   document.getElementById("login-screen").style.display = "none";
+  updateAdminTabVisibility();
   loadFromFirebase();
 };
 
@@ -788,12 +837,13 @@ window.toggleSel=function(cod){
 // ── TABS ─────────────────────────────────────
 window.switchTab=function(tab){
   activeTab=tab;
-  ["album","repetidas","stats","info"].forEach(t=>{
+  ["album","repetidas","stats","info","admin"].forEach(t=>{
     document.getElementById("tab-"+t).style.display=t===tab?"block":"none";
     document.querySelector(`[data-tab="${t}"]`).className="tab-btn"+(t===tab?" active":"");
   });
   if(tab==="repetidas")renderRepetidas();
   if(tab==="stats")renderStats();
+  if(tab==="admin")loadAdminData();
 };
 
 // ── REPETIDAS ────────────────────────────────
@@ -1296,6 +1346,65 @@ window.shareWhatsApp = function(){
   window.open(url, "_blank");
 };
 
+// ── ADMIN ───────────────────────────────────
+async function loadAdminData(){
+  try{
+    const querySnapshot=await getDocs(collection(db,"users"));
+    const users=[];
+    let withWhatsApp=0;
+
+    querySnapshot.forEach(docSnap=>{
+      const data=docSnap.data();
+      users.push(data);
+      if(data.whatsapp)withWhatsApp++;
+    });
+
+    // Sort by registration date (newest first)
+    users.sort((a,b)=>new Date(b.registeredAt)-new Date(a.registeredAt));
+
+    // Update stats
+    document.getElementById("admin-total-users").textContent=users.length;
+    document.getElementById("admin-whatsapp-count").textContent=withWhatsApp;
+    if(users.length>0){
+      const lastDate=new Date(users[0].registeredAt);
+      document.getElementById("admin-last-registered").textContent=lastDate.toLocaleDateString("pt-BR");
+    }
+
+    // Populate table
+    const tbody=document.getElementById("admin-users-table");
+    if(users.length===0){
+      tbody.innerHTML='<tr><td colspan="4" style="padding:12px;text-align:center;color:rgba(255,255,255,.4)">Nenhum usuário registrado ainda</td></tr>';
+    }else{
+      tbody.innerHTML=users.map(u=>{
+        const regDate=new Date(u.registeredAt);
+        const dateStr=regDate.toLocaleDateString("pt-BR");
+        const timeStr=regDate.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+        return`<tr style="border-bottom:1px solid rgba(255,255,255,.1)">
+          <td style="padding:12px;color:#fff">${u.name}</td>
+          <td style="padding:12px;color:rgba(255,255,255,.8);font-family:monospace;font-size:12px">${u.email}</td>
+          <td style="padding:12px;color:rgba(255,255,255,.7)">${u.whatsapp||"-"}</td>
+          <td style="padding:12px;color:rgba(255,255,255,.6);font-size:12px">${dateStr}<br>${timeStr}</td>
+        </tr>`;
+      }).join("");
+    }
+  }catch(err){
+    console.error("Erro ao carregar dados de admin:",err);
+    document.getElementById("admin-users-table").innerHTML='<tr><td colspan="4" style="padding:12px;text-align:center;color:#e74c3c">Erro ao carregar dados</td></tr>';
+  }
+}
+
+function updateAdminTabVisibility(){
+  const adminBtn=document.getElementById("admin-tab-btn");
+  console.log("🔍 Admin Check - userEmail:", userEmail, "adminBtn:", adminBtn);
+  if(userEmail==="wnogueira@hotmail.com"){
+    adminBtn.style.display="block";
+    console.log("✅ Admin tab MOSTRADA");
+  }else{
+    adminBtn.style.display="none";
+    console.log("❌ Admin tab OCULTADA");
+  }
+}
+
 // ── SIGNUP ──────────────────────────────────
 let userEmail = null;
 let userName = null;
@@ -1324,6 +1433,9 @@ window.submitSignup = function(){
   userName = name;
   userEmail = email;
   userWhatsApp = whatsapp;
+
+  // Atualizar visibilidade da aba admin
+  updateAdminTabVisibility();
 
   // Salvar no Firebase
   const userRef = doc(db, "users", email);
@@ -1365,6 +1477,10 @@ if(savedUser){
       registeredAt: new Date().toISOString()
     }, { merge: true });
   }
+
+  // Atualizar visibilidade da aba admin (APÓS pré-registro)
+  console.log("🔍 INIT DEBUG - userName:", userName, "userEmail:", userEmail, "savedUser:", savedUser);
+  updateAdminTabVisibility();
 
   // Mostrar signup na primeira visita (mas não para William)
   setTimeout(()=>{
